@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body %}
+
+<!-- create form to add products to the products model -->
+<form action="" class="form" method="post">
+    {% csrf_token %}
+
+    <label for="">Product name</label>
+    <input type="text" name="name">
+
+    <label for="">Product description</label>
+    <textarea name="description"></textarea>
+
+    <label for="">Product price</label>
+    <input type="number" name="price">
+
+    <label for="">Product image</label>
+    <input type="url" name="image">
+
+    <button type="submit">Submit</button>
+</form>
+{% endblock  %}

@@ -1,0 +1,67 @@
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'register.css' %}">
+{% endblock  %}
+{% block body %}
+<div class='container'>
+    <header>
+      <h2>Sign up, it’s free</h2>
+      <p>It is a long established fact that a reader will be distracted</p>
+    </header>
+    <!-- / START Form -->
+    <div class="form" enctype="multipart/form-data">
+      <form action="" method="post" id="signup">
+        {% csrf_token %}
+        <div class='field'>
+          <label for='username'>Username</label>
+          <input id='username' name='username' type='text' >
+        </div>
+        <div class='field'>
+          <label for='email'>Email Address</label>
+          <input id='email' name='email' type='email' >
+        </div>
+        <div class='field'>
+          <label for='password'>Password</label>
+          <input id='password' name='password' type='password'>
+        </div>
+        <div class='field'>
+          <label for='rpassword'>Repeat Password</label>
+          <input id='rpassword' name='rpassword' type='password'>
+        </div>
+        <div class='checkbox'>
+          <input id='checkbox' name='checkbox' type='checkbox'>
+          <label for='checkbox'>
+            By signing up, you agree with the
+            <a href='#'>terms and conditions</a>
+          </label>
+        </div>
+        <button type="submit">Sign Up</button>
+      </form>
+    </div>
+    <!-- / END Form -->
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js" integrity="sha512-JSCFHhKDilTRRXe9ak/FJ28dcpOJxzQaCd3Xg8MyF6XFjODhy/YMCM8HW0TFDckNHWUewW+kfvhin43hKtJxAw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script>
+  document.getElementById("signup").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    
+    let formData = new FormData(this);
+    
+    let response = await fetch("", {
+        method: "POST",
+        body: formData
+    });
+
+    let result = await response.json();
+    
+    if (result.error) {
+        alert(result.error);  // Display error message
+    } else if (result.success) {
+        window.location.href = result.redirect;  // Redirect to login page
+    }
+});
+</script>
+
+{% endblock  %}

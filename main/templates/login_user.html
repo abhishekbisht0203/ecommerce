@@ -1,0 +1,59 @@
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'login.css' %}">
+{% endblock %}
+{% block body %}
+<div class="login-container">
+	<form action="" class="form-login" id="login">
+		<ul class="login-nav">
+			<li class="login-nav__item active">
+				<a href="{% url 'home' %}">Sign In</a>
+			</li>
+			<li class="login-nav__item">
+				<a href="{% url 'register' %}">Sign Up</a>
+			</li>
+		</ul>
+		<label for="login-input-user" class="login__label">
+			Username
+		</label>
+		<input id="login-input-user" class="login__input" type="text" name="username">
+		<label for="login-input-password" class="login__label">
+			Password
+		</label>
+		<input id="login-input-password" class="login__input" type="password" name="password">
+		<label for="login-sign-up" class="login__label--checkbox">
+			<input id="login-sign-up" type="checkbox" class="login__input--checkbox" />
+			Keep me Signed in
+		</label>
+		<button class="login__submit" type="submit">Sign in</button>
+	</form>
+	<a href="#" class="login__forgot">Forgot Password?</a>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js" integrity="sha512-JSCFHhKDilTRRXe9ak/FJ28dcpOJxzQaCd3Xg8MyF6XFjODhy/YMCM8HW0TFDckNHWUewW+kfvhin43hKtJxAw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+	const login_data = document.getElementById('login')
+
+	login_data.addEventListener('submit', (e)=>
+	{e.preventDefault()
+
+	const loginform = new FormData(login_data)
+
+	axios.post("{% url 'login' %}", loginform,{
+		headers:{
+			"X-CSRFToken": "{{csrf_token}}"
+		}
+	})
+	.then(response =>{
+		console.log(response.data)
+		if (response.data.success){
+			window.location.href = "{% url 'home' %}"
+			}
+			else{
+				alert(response.data.error)
+			}
+
+	})
+	})
+</script>
+{% endblock %}

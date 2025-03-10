@@ -1,0 +1,137 @@
+{% extends "base.html" %} {% block body %}
+<div class="bg-white p-6 rounded-lg shadow-lg">
+  <h2 class="text-2xl font-bold mb-6">Shopping Cart</h2>
+  <div class="flex flex-col space-y-4">
+    {% for item in cart_items %}
+    <!-- Cart item -->
+    <div
+      class="flex items-center justify-between border-b pb-4 cart-item"
+      data-item-id="{{item.product.id}}"
+    >
+      <div class="flex items-center">
+        <img
+          class="h-24 w-24 object-cover rounded-lg"
+          src="{{item.product.image}}"
+          alt="Product Image"
+        />
+        <div class="ml-4">
+          <h3 class="text-xl font-semibold">{{item.product.name}}</h3>
+          <p class="text-gray-600">{{item.product.category}}</p>
+        </div>
+      </div>
+      <div class="flex items-center">
+        <div class="mr-6">
+          <label for="quantity-{{item.product.id}}" class="sr-only"
+            >Quantity</label
+          >
+          <div class="flex justify-center items-center gap-2 border-2 p-2 border-gray-300 divide-x-2 divide-solid">
+            <button class="" onclick="decreasequantity('{{item.product.id}}')">-</button>
+            <div class="flex items-center justify-center" id="quantity-{{item.product.id}}">{{item.quantity}}</div>
+            <button class="" onclick="increasequantity('{{item.product.id}}')">+</button>
+          </div>
+        </div>
+        <p
+          class="text-lg font-semibold item-price"
+          data-price="{{item.product.price}}"
+          id ="price-{{item.product.id}}"
+        >
+          ${{item.total }}
+        </p>
+        <button
+          class="ml-4 text-red-600 hover:text-red-800"
+          onclick="removeCartItem('{{item.product.id}}')"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Cart summary -->
+    <div class="flex justify-end mt-6">
+      <div class="w-full md:w-1/2 lg:w-1/3 bg-gray-100 p-6 rounded-lg">
+        <h3 class="text-xl font-semibold mb-4">Order Summary</h3>
+        <div class="flex justify-between mb-2">
+          <p>Subtotal</p>
+          <p id="subtotal">${{subtotal}}</p>
+        </div>
+        <div class="flex justify-between mb-2">
+          <p>Tax</p>
+          <p id="tax">${{tax}}</p>
+        </div>
+        <div class="flex justify-between mb-2">
+          <p>Shipping</p>
+          <p>${{shipping_charges}}</p>
+        </div>
+        <div class="flex justify-between font-bold">
+          <p>Total</p>
+          <p id="total">${{total}}</p>
+        </div>
+        <a href="{% url 'payment' %}">
+          <button
+            class="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+          >
+            Proceed to Checkout
+          </button>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  function removeCartItem(id) {
+    axios
+      .post(`/removefromcart/${id}/`)
+      .then((response) => {
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("Error removing cart item:", error);
+      });
+  }
+
+  function increasequantity(id) {
+    axios.post(`/increase_quantity/${id}/`)  // Make sure URL is correct
+      .then(response => {
+        if (response.data.success) {
+          // Update UI first
+          document.getElementById(`quantity-${id}`).innerHTML = response.data.quantity;
+          document.getElementById(`price-${id}`).innerHTML = `$${response.data.total}`;
+          document.getElementById('subtotal').innerHTML = `$${response.data.total_sum}`;
+          document.getElementById('tax').innerHTML = `$${response.data.total_tax}`;
+          document.getElementById('total').innerHTML = `$${response.data.sub_total}`;
+  
+          // Reload after a short delay
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        }
+      })
+      .catch(error => console.error("Error updating cart:", error));
+  }
+  
+
+  function decreasequantity(id) {
+    axios.post(`/decrease_quantity/${id}/`)  // Ensure URL matches Django view
+      .then(response => {
+        if (response.data.success) {
+          // Update UI before reloading
+          document.getElementById(`quantity-${id}`).innerHTML = response.data.quantity;
+          document.getElementById(`price-${id}`).innerHTML = `$${response.data.total}`;
+          document.getElementById('subtotal').innerHTML = `$${response.data.total_sum}`;
+          document.getElementById('tax').innerHTML = `$${response.data.total_tax}`;
+          document.getElementById('total').innerHTML = `$${response.data.sub_total}`;
+  
+          // Reload after a short delay
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        }
+      })
+      .catch(error => console.error("Error updating cart:", error));
+  }
+  
+</script>
+{% endblock %}

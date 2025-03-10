@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock  %}
+{% block body %}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-semibold text-gray-800">Orders</h2>
+        <a href="{% url 'home' %}" class="inline-block bg-gray-800 text-white font-semibold px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-300 ease-in-out">Return to Dashboard</a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <table class="w-full">
+            <thead>
+                <tr>
+                    <th class="text-left text-gray-600">Order ID</th>
+                    <th class="text-left text-gray-600">Product</th>
+                    <th class="text-left text-gray-600">Quantity</th>
+                    <th class="text-left text-gray-600">Total</th>
+                    <th class="text-left text-gray-600">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td class="py-4">{{ order.id }}</td>
+                    <td class="py-4">{{ order.product }}</td>
+                    <td class="py-4">{{ order.quantity }}</td>
+                    <td class="py-4">{{ order.total }}</td>
+                    <td class="py-4">{{ order.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+{% endblock  %}
