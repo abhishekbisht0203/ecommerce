@@ -151,7 +151,7 @@
     >
       All categories
     </button>
-    <a href="{% url '/' %}">
+    <a href="{% url 'powerbanks' %}">
     <button
       
       type="button"
@@ -159,24 +159,27 @@
     >
       Power Bank
     </button></a>
+    <a href="{% url 'bags' %}">
     <button
       type="button"
       class="text-gray-900 border border-white hover:border-gray-200 dark:border-gray-900 dark:bg-gray-900 dark:hover:border-gray-700 bg-white focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full text-base font-medium px-5 py-2.5 text-center me-3 mb-3 dark:text-white dark:focus:ring-gray-800"
     >
       Bags
-    </button>
+    </button></a>
+    <a href="{% url 'electronics' %}">
     <button
       type="button"
       class="text-gray-900 border border-white hover:border-gray-200 dark:border-gray-900 dark:bg-gray-900 dark:hover:border-gray-700 bg-white focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full text-base font-medium px-5 py-2.5 text-center me-3 mb-3 dark:text-white dark:focus:ring-gray-800"
     >
       Electronics
-    </button>
+    </button></a>
+    <a href="{% url 'gaming' %}">
     <button
       type="button"
       class="text-gray-900 border border-white hover:border-gray-200 dark:border-gray-900 dark:bg-gray-900 dark:hover:border-gray-700 bg-white focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full text-base font-medium px-5 py-2.5 text-center me-3 mb-3 dark:text-white dark:focus:ring-gray-800"
     >
       Gaming
-    </button>
+    </button></a>
   </div>
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 container mx-auto">
     {% for product in products%}

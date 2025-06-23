@@ -17,6 +17,9 @@ urlpatterns = [
     path('payment/callback/', views.payment_callback, name='payment_callback'),
     path('payment/success/', views.payment_success, name='payment_success'),
     path('orders/', views.orders, name='orders'),
-    path('powerbank/', views.powerbank, name='powerbank'),
+    path('powerbanks/', views.powerbank_view, name='powerbanks'),
+    path('bags/', views.bags_view, name='bags'),
+    path('electronics/', views.electronics_view, name='electronics'),
+    path('gaming/', views.gaming_view, name='gaming'),
 ]
 

@@ -24,16 +24,25 @@ def index(request):
         products = products.filter(name__icontains=query)  # Filter by name contains
     return render(request, "index.html", {"products" : products, "query": query})
 
+
 def form(request):
     if request.method == "POST":
         name = request.POST["name"]
         description = request.POST["description"]
         price = request.POST["price"]
         image = request.POST["image"]
-        Products.objects.create(name=name, description=description, price=price, image=image)
+        category = request.POST["category"]
+
+        Products.objects.create(
+            name=name,
+            description=description,
+            price=price,
+            image=image,
+            category=category
+        )
+        return redirect('form')  # Prevents duplicate save on refresh
 
     return render(request, "form.html")
-
 
 @csrf_exempt
 @login_required
@@ -326,5 +335,18 @@ def orders(request):
     orders = Orders.objects.filter(user=request.user)
     return render(request, "orders.html", {"orders": orders})
 
-def powerbank(request):
-    return render(request, "powerbank.html")
+def powerbank_view(request):
+    powerbanks = Products.objects.filter(category__iexact="Power Bank")
+    return render(request, 'powerbank.html', {'products': powerbanks})
+
+def bags_view(request):
+    bags = Products.objects.filter(category__iexact="Bag")
+    return render(request, 'bags.html', {'products': bags})
+
+def electronics_view(request):
+    electronics = Products.objects.filter(category__iexact="Electronics")
+    return render(request, 'electronics.html', {'products': electronics})
+
+def gaming_view(request):
+    gaming = Products.objects.filter(category__iexact="Gaming")
+    return render(request, 'gaming.html', {'products': gaming})
