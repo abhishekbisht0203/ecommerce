@@ -2,3 +2,4 @@ django
 razorpay
 setuptools
 widget_tweaks
+axios
