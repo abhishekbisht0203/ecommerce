@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'widget_tweaks',
     "main",
-    "razorpay",
 ]
 
 # RAZORPAY KEYS
