@@ -9,13 +9,11 @@
 <body class="min-h-screen bg-gray-50 py-12">
   <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
     <h1 class="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
-    
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Order Summary -->
       <div class="lg:col-span-1">
         <div class="bg-white rounded-lg shadow-md p-6 sticky top-6">
           <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Summary</h2>
-          
           <div class="space-y-4 mb-6">
             {% for item in cart %}
             <div class="flex items-center space-x-4">
@@ -24,15 +22,12 @@
               </div>
               <div class="flex-1">
                 <h3 class="text-sm font-medium text-gray-800">{{ item.product.name }}</h3>
-                <p class="text-sm text-gray-500">Quantity: {{ item.quantity }} x  ${{ item.product.price }} </p>
+                <p class="text-sm text-gray-500">Quantity: {{ item.quantity }} x  ${{ item.product.price }}</p>
               </div>
               <p class="text-sm font-medium text-gray-900">${{ item.total }}</p>
             </div>
             {% endfor %}
-            
           </div>
-          
-          
           {% if cart %}
           <div class="border-t border-gray-200 pt-4 space-y-2">
             <div class="flex justify-between text-sm">
@@ -51,254 +46,145 @@
               <p class="text-gray-900">Total</p>
               <p class="text-gray-900">${{amount}}</p>
             </div>
-            {% else %}
-            <p class="text-gray-600">Your cart is empty.</p>
-            {% endif %}
           </div>
+          {% else %}
+          <p class="text-gray-600">Your cart is empty.</p>
+          {% endif %}
         </div>
       </div>
-      
-          
-      
       <!-- Payment Form -->
       <div class="lg:col-span-2">
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 class="text-xl font-semibold text-gray-800 mb-6">Payment Method</h2>
-          
           <div class="space-y-4">
-            
             <div class="flex items-center">
-              <input 
-                id="razorpay" 
-                name="payment-method" 
-                type="radio" 
-                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" 
-              >
+              <input id="razorpay" name="payment-method" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
               <label for="razorpay" class="ml-3 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span class="text-sm font-medium text-gray-700">Razorpay</span>
+                <span class="text-sm font-medium text-gray-700">Pay with Razorpay</span>
               </label>
             </div>
-            
           </div>
-        </div>
-      
-            
-            <div class="border-t border-gray-200 pt-6">
-              <h3 class="text-lg font-medium text-gray-900 mb-4 " name="address">Billing Address</h3>
-              
-              <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                <div class="sm:col-span-3">
-                  <label for="first-name" class="block text-sm font-medium text-gray-700">
-                    First name
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      type="text"
-                      id="first-name"
-                      name="first-name"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                  </div>
-                </div>
-                
-                <div class="sm:col-span-3">
-                  <label for="last-name" class="block text-sm font-medium text-gray-700">
-                    Last name
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      type="text"
-                      id="last-name"
-                      name="last-name"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                  </div>
-                </div>
-                
-                <div class="sm:col-span-6">
-                  <label for="address" class="block text-sm font-medium text-gray-700">
-                    Address
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      type="text"
-                      id="address"
-                      name="address"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                  </div>
-                </div>
-                
-                <div class="sm:col-span-2">
-                  <label for="city" class="block text-sm font-medium text-gray-700">
-                    City
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      type="text"
-                      id="city"
-                      name="city"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                  </div>
-                </div>
-                
-                <div class="sm:col-span-2">
-                  <label for="state" class="block text-sm font-medium text-gray-700">
-                    State / Province
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      type="text"
-                      id="state"
-                      name="state"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                  </div>
-                </div>
-                
-                <div class="sm:col-span-2">
-                  <label for="postal-code" class="block text-sm font-medium text-gray-700">
-                    ZIP / Postal code
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      type="text"
-                      id="postal-code"
-                      name="postal-code"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                  </div>
-                </div>
-                
-                <div class="sm:col-span-6">
-                  <label for="country" class="block text-sm font-medium text-gray-700">
-                    Country
-                  </label>
-                  <div class="mt-1">
-                    <select
-                      id="country"
-                      name="country"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                      <option>United States</option>
-                      <option>Canada</option>
-                      <option>Mexico</option>
-                      <option>United Kingdom</option>
-                      <option>Germany</option>
-                      <option>France</option>
-                      <option>Italy</option>
-                      <option>Spain</option>
-                      <option>Japan</option>
-                      <option>China</option>
-                      <option>Australia</option>
-                      <option>India</option>
-                      <option>Other</option>
-
-                    </select>
-                  </div>
-                </div>
+          <div class="border-t border-gray-200 pt-6 mt-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Billing Address</h3>
+            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+              <div class="sm:col-span-3">
+                <label for="first-name" class="block text-sm font-medium text-gray-700">First name</label>
+                <input type="text" id="first-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              <div class="sm:col-span-3">
+                <label for="last-name" class="block text-sm font-medium text-gray-700">Last name</label>
+                <input type="text" id="last-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              <div class="sm:col-span-6">
+                <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+                <input type="text" id="address" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              <div class="sm:col-span-2">
+                <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                <input type="text" id="city" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              <div class="sm:col-span-2">
+                <label for="state" class="block text-sm font-medium text-gray-700">State / Province</label>
+                <input type="text" id="state" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              <div class="sm:col-span-2">
+                <label for="postal-code" class="block text-sm font-medium text-gray-700">ZIP / Postal code</label>
+                <input type="text" id="postal-code" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              <div class="sm:col-span-6">
+                <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
+                <select id="country" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  <option value="">Select a country</option>
+                  <option>India</option>
+                  <option>United States</option>
+                  <option>Canada</option>
+                </select>
               </div>
             </div>
-            
-            <div class="flex items-center">
-              <input
-                id="save-info"
-                name="save-info"
-                type="checkbox"
-                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              >
-              <label for="save-info" class="ml-2 block text-sm text-gray-900">
-                Save this information for next time
-              </label>
-            </div>
-            
-            <div class="mt-6">
-              <button
-                id="rzp-button1"
-                name="rzp-button1"
-                type="submit"
-                class="w-full bg-blue-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Complete Payment
-              </button>
-            </div>
-          </form>
+          </div>
+          <div class="mt-6">
+            <button id="rzp-button1" type="button" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md shadow hover:bg-blue-700">Complete Payment</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
+  <script>
     function getCSRFToken() {
-        return document.cookie.split('; ')
-            .find(row => row.startsWith('csrftoken='))
-            ?.split('=')[1];
+      return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
     }
 
-    var options = {
-        "key": "{{ razorpay_key_id }}",  
-        "amount": "{{ amount }}" * 100,  
+    const rzpButton = document.getElementById("rzp-button1");
+    rzpButton.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      const requiredFields = ["first-name", "last-name", "address", "city", "state", "postal-code", "country"];
+      for (let field of requiredFields) {
+        if (!document.getElementById(field).value.trim()) {
+          alert("Please fill all address fields.");
+          return;
+        }
+      }
+
+      const isChecked = document.getElementById("razorpay").checked;
+      if (!isChecked) {
+        alert("Please select Razorpay as payment method.");
+        return;
+      }
+
+      const options = {
+        "key": "{{ razorpay_key_id }}",
+        "amount": "{{ amount }}" * 100,
         "currency": "INR",
         "name": "CADL",
         "image": "https://cadl.in/public/website/favicon2.png",
         "order_id": "{{ order_id }}",
         "handler": function (response) {
-            console.log("Payment Response:", response);
-
-            fetch('/payment/callback/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken(), 
-                },
-                body: JSON.stringify({
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_signature: response.razorpay_signature
-                })
+          fetch('/payment/callback/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    window.location.href = `/payment/success/?payment_id=${response.razorpay_payment_id}`;
-                } else {
-                    alert("Payment verification failed. Please try again.");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === "success") {
+              window.location.href = `/payment/success/?payment_id=${response.razorpay_payment_id}`;
+            } else {
+              alert("Payment verification failed. Please try again.");
+            }
+          })
+          .catch(error => console.error("Error:", error));
         },
         "prefill": {
-            "name": "{{ user.username }}",  
-            "email": "{{ user.email }}",
-            "contact": "{{ user.profile.phone_number }}"
+          "name": "{{ user.username }}",
+          "email": "{{ user.email }}",
+          "contact": "{{ user.profile.phone_number }}"
         },
         "theme": {
-            "color": "#3399cc"
+          "color": "#3399cc"
         },
         "modal": {
-            "ondismiss": function () {
-                window.location.href = '/';
-            }
+          "ondismiss": function () {
+            window.location.href = '/';
+          }
         }
-    };
+      };
 
-    var rzp1 = new Razorpay(options);
-
-    document.getElementById("rzp-button1").onclick = function (e) {
-        e.preventDefault();
-        rzp1.open();
-    };
-</script>
-
-<!-- Payment Button -->
-<button id="rzp-button1" class="btn btn-primary">Pay Now</button>
-
-
+      const rzp1 = new Razorpay(options);
+      rzp1.open();
+    });
+  </script>
 </body>
 </html>

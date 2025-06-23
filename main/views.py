@@ -114,17 +114,22 @@ def cart(request):
 
 def login_user(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        print(username, password)
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        remember = request.POST.get('remember')
+
         user = authenticate(request, username=username, password=password)
-        print (user)
         if user is not None:
             login(request, user)
+
+            if not remember:
+                request.session.set_expiry(0)  # Session expires when browser closes
+
             return JsonResponse({'success': 'Login successful'})
         else:
             return JsonResponse({'error': 'Invalid credentials'})
-    return render(request,'login_user.html')
+
+    return render(request, 'login_user.html')
 
 
 def logout_user(request):

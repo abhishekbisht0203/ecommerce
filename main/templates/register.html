@@ -1,67 +1,94 @@
 {% load static %}
 {% block css %}
-<link rel="stylesheet" href="{% static 'register.css' %}">
-{% endblock  %}
-{% block body %}
-<div class='container'>
-    <header>
-      <h2>Sign up, it’s free</h2>
-      <p>It is a long established fact that a reader will be distracted</p>
-    </header>
-    <!-- / START Form -->
-    <div class="form" enctype="multipart/form-data">
-      <form action="" method="post" id="signup">
-        {% csrf_token %}
-        <div class='field'>
-          <label for='username'>Username</label>
-          <input id='username' name='username' type='text' >
-        </div>
-        <div class='field'>
-          <label for='email'>Email Address</label>
-          <input id='email' name='email' type='email' >
-        </div>
-        <div class='field'>
-          <label for='password'>Password</label>
-          <input id='password' name='password' type='password'>
-        </div>
-        <div class='field'>
-          <label for='rpassword'>Repeat Password</label>
-          <input id='rpassword' name='rpassword' type='password'>
-        </div>
-        <div class='checkbox'>
-          <input id='checkbox' name='checkbox' type='checkbox'>
-          <label for='checkbox'>
-            By signing up, you agree with the
-            <a href='#'>terms and conditions</a>
-          </label>
-        </div>
-        <button type="submit">Sign Up</button>
-      </form>
-    </div>
-    <!-- / END Form -->
-  </div>
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js" integrity="sha512-JSCFHhKDilTRRXe9ak/FJ28dcpOJxzQaCd3Xg8MyF6XFjODhy/YMCM8HW0TFDckNHWUewW+kfvhin43hKtJxAw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Optional: Include any additional CSS here -->
+{% endblock %}
 
-  <script>
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 px-4">
+  <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
+    <!-- Header -->
+    <header class="mb-6 text-center">
+      <h2 class="text-3xl font-bold text-purple-700">Create Your Account</h2>
+      <p class="text-sm text-gray-500 mt-2">Join us and start your journey</p>
+    </header>
+
+    <!-- Form Start -->
+    <form action="" method="post" id="signup" class="space-y-5">
+      {% csrf_token %}
+      <div>
+        <label for="username" class="block text-sm font-semibold text-gray-700">Username</label>
+        <input id="username" name="username" type="text" required
+               class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none">
+      </div>
+      <div>
+        <label for="email" class="block text-sm font-semibold text-gray-700">Email Address</label>
+        <input id="email" name="email" type="email" required
+               class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none">
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-semibold text-gray-700">Password</label>
+        <input id="password" name="password" type="password" required
+               class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none">
+      </div>
+      <div>
+        <label for="rpassword" class="block text-sm font-semibold text-gray-700">Repeat Password</label>
+        <input id="rpassword" name="rpassword" type="password" required
+               class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none">
+      </div>
+
+      <!-- Terms -->
+      <div class="flex items-start gap-2">
+        <input id="checkbox" name="checkbox" type="checkbox" class="mt-1 accent-purple-600" required>
+        <label for="checkbox" class="text-sm text-gray-600">
+          I agree to the
+          <a href="/terms/" class="text-purple-600 hover:underline font-medium">terms and conditions</a>
+        </label>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit"
+              class="w-full bg-purple-600 text-white font-semibold py-2 rounded-xl hover:bg-purple-700 transition">
+        Sign Up
+      </button>
+
+      <!-- Divider -->
+      <div class="text-center text-sm text-gray-400 mt-2">or</div>
+
+      <!-- Login Button -->
+      <a href="{% url 'login' %}"
+         class="w-full block text-center bg-gray-100 border border-gray-300 text-gray-800 font-medium py-2 rounded-xl hover:bg-gray-200 transition mt-2">
+        Already have an account? Login
+      </a>
+    </form>
+    <!-- Form End -->
+  </div>
+</div>
+
+<!-- Axios & JS -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
   document.getElementById("signup").addEventListener("submit", async function (e) {
     e.preventDefault();
-    
-    let formData = new FormData(this);
-    
-    let response = await fetch("", {
-        method: "POST",
-        body: formData
+
+    const checkbox = document.getElementById("checkbox");
+    if (!checkbox.checked) {
+      alert("You must agree to the terms and conditions.");
+      return;
+    }
+
+    const formData = new FormData(this);
+    const response = await fetch("", {
+      method: "POST",
+      body: formData,
     });
 
-    let result = await response.json();
-    
+    const result = await response.json();
     if (result.error) {
-        alert(result.error);  // Display error message
+      alert(result.error);
     } else if (result.success) {
-        window.location.href = result.redirect;  // Redirect to login page
+      window.location.href = result.redirect;
     }
-});
+  });
 </script>
-
-{% endblock  %}
+{% endblock %}
