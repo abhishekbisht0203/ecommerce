@@ -21,6 +21,22 @@ class Cart(models.Model):
     def __str__(self):
         return f"{self.user.username}, {self.product.name}"
     
+
+
+
+class Payment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)
+    address = models.CharField(max_length=255)
+    payment_id = models.CharField(max_length=100, unique=True)  # Razorpay Payment ID
+    order_id = models.CharField(max_length=100, unique=True)  # Razorpay Order ID
+    status = models.CharField(max_length=20, choices=[('Success', 'Success'), ('Failed', 'Failed')], default='Success')
+
+    def __str__(self):
+        return f"Payment {self.payment_id} - {self.user.username} - {self.amount}"
+
+    
 class Orders(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -42,23 +58,7 @@ class Orders(models.Model):
     
     def save(self, *args, **kwargs):
         self.total = self.product.price * self.quantity
-        super().save(*args, **kwargs)
-
-
-class Payment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateTimeField(auto_now_add=True)
-    address = models.CharField(max_length=255)
-    payment_id = models.CharField(max_length=100, unique=True)  # Razorpay Payment ID
-    order_id = models.CharField(max_length=100, unique=True)  # Razorpay Order ID
-    status = models.CharField(max_length=20, choices=[('Success', 'Success'), ('Failed', 'Failed')], default='Success')
-
-    def __str__(self):
-        return f"Payment {self.payment_id} - {self.user.username} - {self.amount}"
-
-    
-    
+        super().save(*args, **kwargs)   
     
     
     

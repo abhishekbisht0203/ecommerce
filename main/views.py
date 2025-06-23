@@ -325,3 +325,6 @@ def payment_success(request):
 def orders(request):
     orders = Orders.objects.filter(user=request.user)
     return render(request, "orders.html", {"orders": orders})
+
+def powerbank(request):
+    return render(request, "powerbank.html")

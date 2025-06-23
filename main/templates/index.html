@@ -151,12 +151,14 @@
     >
       All categories
     </button>
+    <a href="{% url 'powerbank' %}">
     <button
+      
       type="button"
       class="text-gray-900 border border-white hover:border-gray-200 dark:border-gray-900 dark:bg-gray-900 dark:hover:border-gray-700 bg-white focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full text-base font-medium px-5 py-2.5 text-center me-3 mb-3 dark:text-white dark:focus:ring-gray-800"
     >
       Power Bank
-    </button>
+    </button></a>
     <button
       type="button"
       class="text-gray-900 border border-white hover:border-gray-200 dark:border-gray-900 dark:bg-gray-900 dark:hover:border-gray-700 bg-white focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full text-base font-medium px-5 py-2.5 text-center me-3 mb-3 dark:text-white dark:focus:ring-gray-800"
@@ -187,6 +189,7 @@
       />
       <h3 class="text-lg font-bold mb-2">{{product.name}}</h3>
       <p class="text-gray-600 mb-2">{{product.price}}</p>
+      {% if user.is_authenticated %}
       <button
         type="button"
         onclick="addToCart('{{product.id}}')"
@@ -194,6 +197,13 @@
       >
         Add to cart
       </button>
+      {% else %}
+      <a
+        href="{% url 'login' %}"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >Add to cart</a
+      >
+      {% endif %}
     </div>
     {% endfor %}
   </div>
