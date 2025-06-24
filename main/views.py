@@ -48,26 +48,27 @@ def form(request):
 @login_required
 def addtocart(request, product_id):
     user = request.user
-    product = Products.objects.get(id = product_id)
-    if Cart.objects.filter(user=user, product=product).exists():
-        cart = Cart.objects.get(user=user, product=product)
-        cart.quantity += 1
-        cart.total = int(cart.product.price * cart.quantity)
-        cart.save()
-    
-        total_sum =Cart.objects.aggregate(total_sum=Sum('total'))['total_sum']
-        if Payment.objects.filter(user=user).exists():
-            payment = Payment.objects.get(user = user)
-            payment.amount = total_sum
-            payment.save()
-        else:
-            Payment.objects.create(user=user, amount=total_sum)
-        total_tax = int(total_sum * 0.05)
-        sub_total = int(total_sum + total_tax)
-        return JsonResponse({"success": "Cart item quantity increased", "quantity": cart.quantity, "total": cart.total , "total_sum": total_sum, "total_tax": total_tax, "sub_total":sub_total})
-    else:  
-        Cart.objects.create(user=user, product=product ,total=product.price)
-        return JsonResponse({"success": "Cart item added "})
+
+    try:
+        # Get the product
+        product = Products.objects.get(id=product_id)
+    except Products.DoesNotExist:
+        return JsonResponse({"error": "Product not found"}, status=404)
+
+    # Check if the product is already in the cart
+    cart_item, created = Cart.objects.get_or_create(user=user, product=product)
+    if not created:
+        # If it exists, increase the quantity and update the total
+        cart_item.quantity += 1
+        cart_item.total = cart_item.quantity * product.price
+        cart_item.save()
+    else:
+        # If new, set the total for the product
+        cart_item.total = product.price
+        cart_item.save()
+
+    return JsonResponse({"success": "Item added to cart", "quantity": cart_item.quantity, "total": cart_item.total})
+
     
 @csrf_exempt
 @login_required
