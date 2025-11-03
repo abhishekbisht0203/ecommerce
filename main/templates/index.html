@@ -213,16 +213,11 @@
 </section>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-  function addToCart(productId) {
+function addToCart(productId) {
   axios.post(`/addtocart/${productId}/`)
-    .then(response => {
-      alert(response.data.success || "Item added to cart!");
-    })
-    .catch(error => {
-      console.error(error);
-      alert("Failed to add item to cart. Please try again.");
-    });
+    .then(response => alert(response.data.success || "Item added to cart!"))
+    .catch(() => alert("Failed to add item to cart."));
 }
-
 </script>
-{% endblock %}
+
+{% endblock %} index.html 

@@ -1,5 +1,5 @@
 django
 razorpay
 setuptools
-widget_tweaks
+django-widget-tweaks
 axios
