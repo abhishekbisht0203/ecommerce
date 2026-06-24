@@ -26,7 +26,7 @@
 
           <!-- Price -->
           <p class="text-lg font-semibold text-indigo-600 item-price" data-price="{{item.product.price}}" id="price-{{item.product.id}}">
-            ${{item.total}}
+            ₹{{item.total}}
           </p>
 
           <!-- Remove -->
@@ -45,19 +45,19 @@
         
         <div class="flex justify-between mb-3 text-gray-600">
           <span>Subtotal</span>
-          <span id="subtotal">${{subtotal}}</span>
+          <span id="subtotal">₹{{subtotal}}</span>
         </div>
         <div class="flex justify-between mb-3 text-gray-600">
           <span>Tax</span>
-          <span id="tax">${{tax}}</span>
+          <span id="tax">₹{{tax}}</span>
         </div>
         <div class="flex justify-between mb-3 text-gray-600">
           <span>Shipping</span>
-          <span>${{shipping_charges}}</span>
+          <span>₹{{shipping_charges}}</span>
         </div>
         <div class="flex justify-between font-bold text-lg border-t pt-4 text-gray-800">
           <span>Total</span>
-          <span id="total">${{total}}</span>
+          <span id="total">₹{{total}}</span>
         </div>
 
         <a href="{% url 'payment' %}">

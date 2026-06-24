@@ -5,6 +5,122 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout - Payment Page</title>
   <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+      /* Dark glass overlay backdrop */
+      .swal2-backdrop {
+        background: rgba(0,0,0,0.65) !important;
+        /* apply blur to backdrop */
+        backdrop-filter: blur(24px) !important;
+      }
+      /* Premium glassmorphism popup */
+      .swal2-popup-custom {
+        background: rgba(18,18,24,0.85) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.45) !important;
+        border-radius: 24px !important;
+        backdrop-filter: blur(24px) !important;
+        width: 500px !important;
+        padding: 2rem !important;
+      }
+      .swal2-popup-custom .swal2-title {
+        color: #FFFFFF !important;
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
+      }
+      .swal2-popup-custom .swal2-html-container {
+        color: #B8BCC8 !important;
+        font-size: 1rem !important;
+        margin-top: 0.5rem !important;
+      }
+      .swal2-confirm-custom {
+        border-radius: 14px !important;
+        padding: 0.75rem 1.5rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        color: #fff !important;
+      }
+      .swal2-confirm-custom:hover {
+        box-shadow: 0 0 12px rgba(255,255,255,0.6) !important;
+        transform: scale(1.05) !important;
+      }
+      /* Accent gradients for buttons */
+      .purple-gradient {
+        background: linear-gradient(135deg, #800080, #0000FF) !important;
+      }
+      .amber-gradient {
+        background: linear-gradient(135deg, #FFAA00, #FFDD55) !important;
+      }
+      .red-gradient {
+        background: linear-gradient(135deg, #FF416C, #FF4B2B) !important;
+      }
+      .emerald-gradient {
+        background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+      }
+      /* Icon container */
+      .icon-container {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 2s infinite;
+      }
+      .icon-container.purple {
+        background: linear-gradient(135deg, #800080, #0000FF);
+      }
+      .icon-container.amber {
+        background: linear-gradient(135deg, #FFAA00, #FFDD55);
+      }
+      .icon-container.red {
+        background: linear-gradient(135deg, #FF416C, #FF4B2B);
+      }
+      .icon-container.emerald {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+      }
+      .icon-container svg {
+        width: 40px;
+        height: 40px;
+        fill: #fff;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.07); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.9; }
+      }
+      /* Entrance animation */
+      .swal2-popup-custom {
+        animation: zoomIn 0.5s ease both;
+      }
+      @keyframes zoomIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+      }
+    </style>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+      .swal2-popup-custom {
+        width: 500px !important;
+        border-radius: 24px;
+        backdrop-filter: blur(20px);
+      }
+      .swal2-confirm-custom {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+      }
+      .swal2-confirm-custom:hover {
+        box-shadow: 0 0 10px rgba(255,255,255,0.6);
+        transform: scale(1.05);
+      }
+    </style>
 </head>
 <body class="min-h-screen bg-gray-50 py-12">
   <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
@@ -22,9 +138,9 @@
               </div>
               <div class="flex-1">
                 <h3 class="text-sm font-medium text-gray-800">{{ item.product.name }}</h3>
-                <p class="text-sm text-gray-500">Quantity: {{ item.quantity }} x  ${{ item.product.price }}</p>
+                <p class="text-sm text-gray-500">Quantity: {{ item.quantity }} x  ₹{{ item.product.price }}</p>
               </div>
-              <p class="text-sm font-medium text-gray-900">${{ item.total }}</p>
+              <p class="text-sm font-medium text-gray-900">₹{{ item.total }}</p>
             </div>
             {% endfor %}
           </div>
@@ -32,7 +148,7 @@
           <div class="border-t border-gray-200 pt-4 space-y-2">
             <div class="flex justify-between text-sm">
               <p class="text-gray-600">Subtotal</p>
-              <p class="text-gray-900 font-medium">${{subtotal}}</p>
+              <p class="text-gray-900 font-medium">₹{{subtotal}}</p>
             </div>
             <div class="flex justify-between text-sm">
               <p class="text-gray-600">Shipping</p>
@@ -40,11 +156,11 @@
             </div>
             <div class="flex justify-between text-sm">
               <p class="text-gray-600">Tax</p>
-              <p class="text-gray-900 font-medium">${{tax}}</p>
+              <p class="text-gray-900 font-medium">₹{{tax}}</p>
             </div>
             <div class="flex justify-between text-base font-medium pt-2 border-t border-gray-200 mt-2">
               <p class="text-gray-900">Total</p>
-              <p class="text-gray-900">${{amount}}</p>
+              <p class="text-gray-900">₹{{amount}}</p>
             </div>
           </div>
           {% else %}
@@ -126,14 +242,37 @@
       const requiredFields = ["first-name", "last-name", "address", "city", "state", "postal-code", "country"];
       for (let field of requiredFields) {
         if (!document.getElementById(field).value.trim()) {
-          alert("Please fill all address fields.");
+          Swal.fire({
+  title: 'Incomplete Information',
+  html: '<div class="icon-container amber"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
+  text: 'Please fill all billing address fields before proceeding.',
+  confirmButtonText: '✓ Understood',
+  customClass: {
+    popup: 'swal2-popup-custom',
+    confirmButton: 'swal2-confirm-custom amber-gradient'
+  },
+  showClass: { popup: 'animate__animated animate__bounceIn' },
+  hideClass: { popup: 'animate__animated animate__fadeOut' }
+});
           return;
         }
       }
 
       const isChecked = document.getElementById("razorpay").checked;
       if (!isChecked) {
-        alert("Please select Razorpay as payment method.");
+        Swal.fire({
+  title: 'Payment Method Required',
+  html: '<span style="font-size:2rem;">💳</span>',
+  text: 'Please select Razorpay as payment method to continue.',
+  confirmButtonText: '✓ Got It',
+  background: 'linear-gradient(135deg, #800080, #0000FF)',
+  customClass: {
+    popup: 'swal2-popup-custom',
+    confirmButton: 'swal2-confirm-custom'
+  },
+  showClass: { popup: 'animate__animated animate__zoomIn' },
+  hideClass: { popup: 'animate__animated animate__fadeOut' }
+});
         return;
       }
 
@@ -160,9 +299,21 @@
           .then(res => res.json())
           .then(data => {
             if (data.status === "success") {
-              window.location.href = `/payment/success/?payment_id=${response.razorpay_payment_id}`;
+              window.location.href = `/payment/success/?payment_id=₹{response.razorpay_payment_id}`;
             } else {
-              alert("Payment verification failed. Please try again.");
+              Swal.fire({
+  icon: 'error',
+  title: 'Payment Failed',
+  text: 'Something went wrong while processing your payment.',
+  confirmButtonText: 'Try Again',
+  background: 'linear-gradient(135deg, #FF416C, #FF4B2B)',
+  customClass: {
+    popup: 'swal2-popup-custom',
+    confirmButton: 'swal2-confirm-custom'
+  },
+  showClass: { popup: 'animate__animated animate__shakeX' },
+  hideClass: { popup: 'animate__animated animate__fadeOut' }
+});
             }
           })
           .catch(error => console.error("Error:", error));

@@ -1,0 +1,112 @@
+/* static/css/premium-login.css */
+
+:root {
+  --bg-primary: #020617;
+  --bg-dark-1: #0F172A;
+  --bg-dark-2: #111827;
+  --accent-start: #FF2D55;
+  --accent-end: #FF6B35;
+  --glass-bg: rgba(255,255,255,0.05);
+  --glass-border: rgba(255,255,255,0.08);
+}
+
+/* Glassmorphism base */
+.glass {
+  backdrop-filter: blur(30px);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem; /* fallback */
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.2),
+    0 8px 32px rgba(0,0,0,0.4);
+}
+
+/* Corner radii helpers */
+.rounded-20 { border-radius: 20px; }
+.rounded-24 { border-radius: 24px; }
+.rounded-32 { border-radius: 32px; }
+
+/* Hero typography */
+.hero-title, .hero-subtitle {
+  font-size: 78px;
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+/* Input styling */
+.input-glass {
+  height: 60px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  color: #fff;
+  padding-left: 2.5rem;
+  padding-right: 1rem;
+}
+.input-glass::placeholder { color: #bbb; }
+.input-glass:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-start);
+}
+
+/* Button primary */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  height: 60px;
+  background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: transform 0.2s ease;
+}
+.btn-primary:hover { transform: scale(1.02); }
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+.btn-primary:hover::after { transform: translateX(100%); }
+
+/* Google button */
+.btn-google {
+  height: 60px;
+  background: #fff;
+  color: #000;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-google:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Hover lift for feature cards */
+.hover-lift:hover { transform: translateY(-5px); }
+
+/* Floating product cards animation */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.product-card { animation: floatY 7s ease-in-out infinite; }
+
+/* Radial background glow */
+.bg-red-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255,45,85,.2), transparent 60%);
+  mix-blend-mode: screen;
+}
+
+/* Count‑up numbers – JavaScript will replace text */
+.stat-number { font-weight: 700; }

@@ -1,59 +1,65 @@
 {% load static %}
 {% block css %}
-<link rel="stylesheet" href="{% static 'login.css' %}">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+/* Remove main padding/margin for full-screen login */
+main { padding:0 !important; margin:0 !important; }
+/* Input styling to ensure visibility */
+input { position:relative; z-index:10; color:#ffffff; opacity:1; }
+label { z-index:20; }
+</style>
 {% endblock %}
 {% block body %}
-<div class="login-container">
-	<form action="" class="form-login" id="login">
-		<ul class="login-nav">
-			<li class="login-nav__item active">
-				<a href="{% url 'home' %}">Sign In</a>
-			</li>
-			<li class="login-nav__item">
-				<a href="{% url 'register' %}">Sign Up</a>
-			</li>
-		</ul>
-		<label for="login-input-user" class="login__label">
-			Username
-		</label>
-		<input id="login-input-user" class="login__input" type="text" name="username">
-		<label for="login-input-password" class="login__label">
-			Password
-		</label>
-		<input id="login-input-password" class="login__input" type="password" name="password">
-		<label for="login-sign-up" class="login__label--checkbox">
-			<input id="login-sign-up" type="checkbox" class="login__input--checkbox" />
-			Keep me Signed in
-		</label>
-		<button class="login__submit" type="submit">Sign in</button>
-	</form>
-	<a href="{% url 'password_reset' %}" class="login__forgot">Forgot Password?</a>
+<!-- Full-screen hero layout using Tailwind utilities -->
+<div class="relative flex w-screen h-screen overflow-hidden">
+  <!-- Background image -->
+  <div class="absolute inset-0 bg-[url('/static/images/boat_premium_background.jpg')] bg-cover bg-center"></div>
+  <!-- Login card container -->
+  <div class="z-10 absolute right-10 top-1/2 transform -translate-y-1/2 max-w-md w-full p-8">
+    <div class="bg-white/15 backdrop-blur-xl rounded-xl shadow-xl p-8 glassmorph">
+      <div class="flex flex-col items-center mb-6">
+        <img src="https://www.boat-lifestyle.com/cdn/shop/files/boAt_logo_black_24889e30-925c-4185-a028-9fef497a8e44.svg?v=1732879339" alt="boAt" class="w-20 mb-4" />
+        <h2 class="text-2xl font-semibold text-white mb-2">Welcome Back</h2>
+        <p class="text-sm text-gray-200">Sign in to continue shopping</p>
+      </div>
+      <form id="login" class="space-y-4" autocomplete="off" >
+        <div class="relative">
+          <input type="text" name="username" id="username" required placeholder="Username / Email" autocomplete="username" class="w-full px-4 py-3 pr-12 bg-white/25 border-none rounded-lg text-white focus:bg-white/35 outline-none relative z-10 placeholder-gray-300" />
+          <div id="usernameError" class="text-red-500 text-sm mt-1 hidden"></div>
+          <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-300"><i class="fas fa-user"></i></span>
+        </div>
+        <div class="relative">
+          <input type="password" name="password" id="password" required placeholder="Password" autocomplete="current-password" class="w-full px-4 py-3 pr-12 bg-white/25 border-none rounded-lg text-white focus:bg-white/35 outline-none relative z-10" />
+          <div id="passwordError" class="text-red-500 text-sm mt-1 hidden"></div>
+          <span class="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-300"><i class="fas fa-lock"></i></span>
+          <span class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-300" id="togglePassword"><i class="fas fa-eye"></i></span>
+        </div>
+        <div class="flex justify-between items-center text-sm text-gray-200">
+          <label class="flex items-center">
+            <input type="checkbox" name="remember" id="remember" class="mr-2" />
+            Keep me Signed in
+          </label>
+          <a href="{% url 'password_reset' %}" class="underline">Forgot Password?</a>
+        </div>
+        <button type="submit" class="w-full bg-gradient-to-r from-[#ff6b6b] to-[#f0e130] text-white py-3 rounded-lg font-medium shadow-md hover:scale-105 transform transition" id="loginBtn">
+          <span class="hidden" id="loginSpinner"></span>
+          Sign In
+        </button>
+        <div class="flex justify-center mt-4">
+          <button type="button" class="flex items-center justify-center bg-white text-gray-800 py-2 px-4 rounded-lg w-full" id="googleLoginBtn">
+            <img src="https://th.bing.com/th/id/OIP.EhTMbGiYfYzQnWLgjZaoJAHaHa?w=198&h=198&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" alt="Google" class="w-5 h-5 mr-2" />
+            Continue with Google
+          </button>
+        </div>
+        <p class="text-center text-sm text-gray-200 mt-4">Don't have an account? <a href="{% url 'register' %}" class="underline">Create Account</a></p>
+      </form>
+    </div>
+  </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js" integrity="sha512-JSCFHhKDilTRRXe9ak/FJ28dcpOJxzQaCd3Xg8MyF6XFjODhy/YMCM8HW0TFDckNHWUewW+kfvhin43hKtJxAw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<script>
-	const login_data = document.getElementById('login')
-
-	login_data.addEventListener('submit', (e)=>
-	{e.preventDefault()
-
-	const loginform = new FormData(login_data)
-
-	axios.post("{% url 'login' %}", loginform,{
-		headers:{
-			"X-CSRFToken": "{{csrf_token}}"
-		}
-	})
-	.then(response =>{
-		console.log(response.data)
-		if (response.data.success){
-			window.location.href = "{% url 'home' %}"
-			}
-			else{
-				alert(response.data.error)
-			}
-
-	})
-	})
-</script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}

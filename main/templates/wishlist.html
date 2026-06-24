@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto py-8">
+  <h1 class="text-3xl font-bold mb-6">My Wishlist</h1>
+  {% if products %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {% for product in products %}
+        {% include "includes/product_card.html" with product=product %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-16">
+      <i class="fa-solid fa-heart text-6xl text-pink-400 mb-4"></i>
+      <p class="text-xl text-gray-600">Your Wishlist is Empty</p>
+      <a href="{% url 'home' %}" class="mt-4 inline-block bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark">Continue Shopping</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

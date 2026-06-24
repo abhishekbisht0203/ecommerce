@@ -5,6 +5,10 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('', views.index, name="home"),
     path('product/', views.product, name="product"),
+    path('wishlist/', views.wishlist_page, name='wishlist'),
+    path('wishlist/add/<int:product_id>/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('wishlist/remove/<int:product_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
+    path('quickview/<int:product_id>/', views.quick_view, name='quick_view'),
     path('login/', views.login_user, name="login"),
     path('logout/', views.logout_user, name="logout"),
     path('register/', views.register, name="register"),

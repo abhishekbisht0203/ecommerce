@@ -7,10 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>boAt Ecommerce</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
+    <!-- Custom UI utilities -->
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+    <!-- Axios CDN for HTTP requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Framer Motion bundle (ESM) -->
+        <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
@@ -19,105 +23,105 @@
       rel="stylesheet"
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <!-- GSAP for premium animations -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <!-- SweetAlert2 & Notyf CDN (must load BEFORE our custom JS) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
     {% block css %}
     {% endblock %}
   </head>
   <body class="bg-gray-50">
-    <nav class="flex justify-between py-4 sticky top-0 z-[999] bg-white px-8 shadow-md">
-      <div class="flex gap-4 items-center">
-        <a href="/">
-          <img
-            src="https://www.boat-lifestyle.com/cdn/shop/files/boAt_logo_small_3067da8c-a83b-46dd-b28b-6ef1e16ccd17_small.svg?v=1693549434"
-            alt="boAt logo"
-            class="h-10"
-          />
-        </a>
-        <div class="space-x-6 font-semibold text-gray-700 hidden md:block">
-          <a href="{% url 'home' %}" class="hover:text-blue-600">Categories</a>
-          <a href="{% url 'home' %}" class="hover:text-blue-600">boAt Personalisation</a>
-          <a href="{% url 'home' %}" class="hover:text-blue-600">Gift with boAt</a>
-          <a href="{% url 'orders' %}" class="hover:text-blue-600">Corporate Orders</a>
-          <a href="{% url 'home' %}" class="hover:text-blue-600">More</a>
-        </div>
-      </div>
-      <div class="flex gap-4 items-center">
-        <form action="{% url 'home' %}" method="GET" class="relative">
-          <input
-            type="search"
-            name="q"
-            placeholder="Search Earphones"
-            class="pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value="{{ request.GET.q }}"
-          />
-          <div class="absolute top-2.5 left-3 text-gray-400">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </div>
-        </form>
-        <div class="space-x-3 text-lg">
-          {% if request.user.is_authenticated %}
-          <a href="{% url 'logout' %}" class="hover:text-red-600">
-            <i class="fa-solid fa-right-from-bracket"></i>
-          </a>
-          {% else %}
-          <a href="{% url 'login' %}" class="hover:text-blue-600">
-            <i class="fa-solid fa-user"></i>
-          </a>
-          {% endif %}
-          <a href="{% url 'cart' %}" class="hover:text-green-600">
-            <i class="fa-solid fa-bag-shopping"></i>
-          </a>
-        </div>
-      </div>
-    </nav>
+    {% include "includes/navbar.html" %}
 
     <main class="px-4 md:px-16 py-6">
       {% block body %}
       {% endblock %}
     </main>
 
-    <footer class="bg-white border-t mt-20">
-      <div class="max-w-screen-xl mx-auto py-8 px-4 grid md:grid-cols-4 gap-8">
-        <div>
-          <h2 class="font-bold text-gray-800 mb-4">Company</h2>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li><a href="#" class="hover:underline">About</a></li>
-            <li><a href="#" class="hover:underline">Careers</a></li>
-            <li><a href="#" class="hover:underline">Brand Center</a></li>
-            <li><a href="#" class="hover:underline">Blog</a></li>
-          </ul>
+    <footer class="bg-[#EEF5FD] mt-20 pt-16 pb-8 px-4 md:px-8">
+      <div class="max-w-screen-xl mx-auto" data-motion="fade-up">
+        <!-- Section Header -->
+        <div class="text-center mb-12">
+          <h2 class="text-4xl md:text-5xl font-extrabold text-[#1a2b4c] mb-4">Get in Touch</h2>
+          <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+            Have a question, feedback, or just want to say hello? We'd love to hear from you. Drop us a line below!
+          </p>
         </div>
-        <div>
-          <h2 class="font-bold text-gray-800 mb-4">Help Center</h2>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li><a href="#" class="hover:underline">Discord Server</a></li>
-            <li><a href="#" class="hover:underline">Twitter</a></li>
-            <li><a href="#" class="hover:underline">Facebook</a></li>
-            <li><a href="#" class="hover:underline">Contact Us</a></li>
-          </ul>
-        </div>
-        <div>
-          <h2 class="font-bold text-gray-800 mb-4">Legal</h2>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li><a href="#" class="hover:underline">Privacy Policy</a></li>
-            <li><a href="#" class="hover:underline">Licensing</a></li>
-            <li><a href="#" class="hover:underline">Terms & Conditions</a></li>
-          </ul>
-        </div>
-        <div>
-          <h2 class="font-bold text-gray-800 mb-4">Download</h2>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li><a href="#" class="hover:underline">iOS</a></li>
-            <li><a href="#" class="hover:underline">Android</a></li>
-            <li><a href="#" class="hover:underline">Windows</a></li>
-            <li><a href="#" class="hover:underline">MacOS</a></li>
-          </ul>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-start">
+          
+          <!-- Left Column - Contact Form -->
+          <div class="bg-white rounded-[16px] shadow-xl p-8 md:p-10 transition-transform duration-300 hover:-translate-y-1">
+            <form action="#" method="POST" class="space-y-6">
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Your Name</label>
+                <input type="text" placeholder="Your full name" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#1a2b4c] focus:ring-2 focus:ring-[#1a2b4c]/20 outline-none transition-all text-gray-800">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
+                <input type="email" placeholder="Your email address" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#1a2b4c] focus:ring-2 focus:ring-[#1a2b4c]/20 outline-none transition-all text-gray-800">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Message</label>
+                <textarea rows="4" placeholder="Your message here..." class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#1a2b4c] focus:ring-2 focus:ring-[#1a2b4c]/20 outline-none transition-all text-gray-800 resize-none"></textarea>
+              </div>
+              <button type="submit" class="w-full bg-[#1a2b4c] text-white font-bold py-4 rounded-lg hover:bg-blue-900 hover:scale-[1.02] transition-all shadow-md">
+                Send Message
+              </button>
+            </form>
+          </div>
+
+          <!-- Right Column - Contact Details -->
+          <div class="flex flex-col justify-center h-full space-y-8">
+            <div>
+              <h3 class="text-3xl font-bold text-[#1a2b4c] mb-4">Reach Out to Us</h3>
+              <p class="text-gray-600 leading-relaxed text-lg">
+                We're here to help and answer any question you might have. Feel free to reach out via this form or contact us directly!
+              </p>
+            </div>
+
+            <div class="space-y-4 text-gray-800 text-lg">
+              <p><span class="font-bold text-[#1a2b4c]">Email:</span> <a href="mailto:abhishekbisht0203@gmail.com" class="text-blue-600 hover:text-blue-700 hover:underline transition-colors">abhishekbisht0203@gmail.com</a></p>
+              <p><span class="font-bold text-[#1a2b4c]">Phone:</span> <a href="tel:+917456849590" class="text-blue-600 hover:text-blue-700 hover:underline transition-colors">+91 7456849590</a></p>
+              <p><span class="font-bold text-[#1a2b4c]">Address:</span> <span class="text-gray-600">Dist. Nainital, Uttarakhand, India 263001</span></p>
+            </div>
+
+            <div>
+              <h4 class="text-xl font-bold text-[#1a2b4c] mb-4">Follow Us</h4>
+              <div class="flex space-x-4">
+                <a href="#" class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110 hover:shadow-[0_0_15px_rgba(37,99,235,0.5)] transition-all duration-300">
+                  <i class="fa-brands fa-facebook-f text-xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110 hover:shadow-[0_0_15px_rgba(37,99,235,0.5)] transition-all duration-300">
+                  <i class="fa-brands fa-github text-xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110 hover:shadow-[0_0_15px_rgba(37,99,235,0.5)] transition-all duration-300">
+                  <i class="fa-brands fa-instagram text-xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110 hover:shadow-[0_0_15px_rgba(37,99,235,0.5)] transition-all duration-300">
+                  <i class="fa-brands fa-linkedin-in text-xl"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-      <div class="bg-gray-100 py-4 text-center text-sm text-gray-500">
-        © 2025 boAt Ecommerce. All rights reserved.
+      
+      <div class="max-w-screen-xl mx-auto mt-16 text-center text-sm text-gray-500 pt-8 border-t border-blue-200">
+        © 2026 boAt Ecommerce. All rights reserved.
       </div>
     </footer>
+
+    <!-- Custom JS loaded at end of body: Swal, axios, gsap are all ready -->
+    <script src="{% static 'js/animations.js' %}"></script>
+    <script src="{% static 'js/wishlist.js' %}"></script>
+    <script src="{% static 'js/cart.js' %}"></script>
+    <script src="{% static 'js/quickview.js' %}"></script>
   </body>
 </html>

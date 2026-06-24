@@ -31,7 +31,7 @@
           <td class="px-6 py-4 font-medium">{{ order.id }}</td>
           <td class="px-6 py-4">{{ order.product }}</td>
           <td class="px-6 py-4">{{ order.quantity }}</td>
-          <td class="px-6 py-4 font-semibold text-green-600">${{ order.total }}</td>
+          <td class="px-6 py-4 font-semibold text-green-600">₹{{ order.total }}</td>
           <td class="px-6 py-4">
             {% if order.status == "Pending" %}
               <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">Pending</span>

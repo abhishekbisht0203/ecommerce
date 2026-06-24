@@ -1,0 +1,70 @@
+/* Custom utilities for premium UI (glassmorphism, gradients, pills, etc.) */
+
+/* Glass effect – usable via class="glass" */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1rem; /* 16px */
+}
+
+.dark .glass {
+  background: rgba(15, 23, 45, 0.45);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Gradient border pill (used for category chips) */
+.pill {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem; /* vertical/horizontal */
+  font-weight: 600;
+  font-family: var(--tw-font-sans);
+  cursor: pointer;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(12px);
+}
+.pill::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, var(--tw-gradient-stops));
+  filter: blur(8px);
+  z-index: -1;
+}
+.pill.active {
+  background: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to));
+  color: #fff;
+  border: none;
+}
+
+/* Skeleton loading shimmer */
+.skeleton {
+  background: #e2e8f0; /* gray-200 */
+  border-radius: 0.25rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* Hover micro‑interactions for buttons */
+.btn-interactive {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-interactive:hover {
+  transform: scale(0.97);
+}
+
+/* Card hover elevation */
+.card-hover {
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+.card-hover:hover {
+  transform: translateY(-0.75rem) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}

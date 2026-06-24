@@ -1,0 +1,45 @@
+{% load static product_extras %}
+{% static 'images/fallback/default.jpg' as fallback_img %}
+<div class="relative group glass p-4 rounded-xl shadow-card card-hover transition-all">
+  <!-- Product Image with smart fallback -->
+  <div class="overflow-hidden rounded-lg">
+    <img src="{% product_image_url product %}" alt="{{ product.name }}"
+         class="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-110"
+         loading="lazy"
+         onerror="this.onerror=null; this.src='{{ fallback_img }}'" />
+  </div>
+
+  <!-- Optional badge (new/sale/etc.) – placeholder logic -->
+  {% if product.category == "New" %}
+  <span class="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded-full animate-pulse-slow">New</span>
+  {% endif %}
+
+  <div class="mt-4 text-center">
+    <h3 class="font-heading text-lg text-text truncate">{{ product.name }}</h3>
+    <p class="font-subheading text-primary font-medium">₹{{ product.price }}</p>
+  </div>
+
+  <!-- Hover actions (hidden until hover) -->
+  <div class="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+    <div class="flex space-x-4">
+      <!-- Wishlist -->
+      <button aria-label="Add to wishlist" class="p-2 bg-white rounded-full shadow-sm hover:scale-110 hover:shadow-glass transition transform wishlist-btn" data-wishlist-id="{{ product.id }}" onclick="toggleWishlist('{{ product.id }}')">
+        <i class="fa-solid fa-heart text-primary"></i>
+      </button>
+      <!-- Quick view -->
+      <button aria-label="Quick view" class="p-2 bg-white rounded-full shadow-sm hover:scale-110 hover:shadow-glass transition transform quick-view-btn" data-product-id="{{ product.id }}" onclick="quickView('{{ product.id }}')">
+        <i class="fa-solid fa-eye text-primary"></i>
+      </button>
+      <!-- Add to cart (primary) -->
+      {% if user.is_authenticated %}
+      <button aria-label="Add to cart"
+              class="px-4 py-2 bg-primary text-white rounded-full font-subheading hover:scale-105 hover:shadow-glass transition"
+              onclick="addToCart('{{ product.id }}')">
+        Add to Cart
+      </button>
+      {% else %}
+      <a href="{% url 'login' %}" class="px-4 py-2 bg-primary text-white rounded-full font-subheading hover:scale-105 hover:shadow-glass transition">Add to Cart</a>
+      {% endif %}
+    </div>
+  </div>
+</div>

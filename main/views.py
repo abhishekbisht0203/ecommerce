@@ -16,13 +16,19 @@ from .models import Cart, Products
 import logging
 
 # Create your views here.
+
 def index(request):
     query = request.GET.get('q', '')  # Get search query from URL
     products = Products.objects.all()
 
     if query:
         products = products.filter(name__icontains=query)  # Filter by name contains
-    return render(request, "index.html", {"products" : products, "query": query})
+    # Determine wishlist product IDs for the current user (session for guests)
+    if request.user.is_authenticated:
+        wishlist_ids = list(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True))
+    else:
+        wishlist_ids = request.session.get('wishlist', [])
+    return render(request, "index.html", {"products" : products, "query": query, "wishlist_ids": wishlist_ids})
 
 
 def form(request):
@@ -67,7 +73,7 @@ def addtocart(request, product_id):
         cart_item.total = product.price
         cart_item.save()
 
-    return JsonResponse({"success": "Item added to cart", "quantity": cart_item.quantity, "total": cart_item.total})
+    return JsonResponse({"success": True, "quantity": cart_item.quantity, "total": cart_item.total, "cart_count": Cart.objects.filter(user=user).aggregate(total_qty=Sum('quantity'))['total_qty'] or 0})
 
     
 @csrf_exempt
@@ -95,8 +101,21 @@ def increase_quantity(request, product_id):
 
 
 def product(request):
-    products = products.objects.all()
-    return render (request, "product.html", {"products" : products})
+    # Existing generic product list view (kept for compatibility)
+    products = Products.objects.all()
+    return render(request, "product.html", {"products": products})
+
+def product_detail(request, product_id):
+    """Detailed view for a single product with image gallery."""
+    try:
+        product = Products.objects.get(id=product_id)
+    except Products.DoesNotExist:
+        return HttpResponseBadRequest("Product not found")
+    images = product.images.all()
+    return render(request, "product_detail.html", {"product": product, "images": images})
+    # List all products (used for a generic product listing page)
+    products = Products.objects.all()
+    return render(request, "product.html", {"products": products})
 
 @login_required
 def cart(request):
@@ -113,23 +132,34 @@ def cart(request):
 
 
 
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
 def login_user(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
         remember = request.POST.get('remember')
+
+        # Server‑side validation
+        if not username:
+            return JsonResponse({'error': 'Username is required'}, status=400)
+        if not password:
+            return JsonResponse({'error': 'Password is required'}, status=400)
 
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
 
+            # If "remember me" not checked, expire on browser close
             if not remember:
-                request.session.set_expiry(0)  # Session expires when browser closes
+                request.session.set_expiry(0)
 
-            return JsonResponse({'success': 'Login successful'})
+            return JsonResponse({'success': True})
         else:
-            return JsonResponse({'error': 'Invalid credentials'})
+            return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
+    # Render the login page for GET requests
     return render(request, 'login_user.html')
 
 
@@ -201,6 +231,85 @@ def decrease_quantity(request, product_id):
 
 
 
+
+# Wishlist Views
+from django.views.decorators.http import require_POST
+
+@require_POST
+def add_to_wishlist(request, product_id):
+    """Add a product to the wishlist.
+    Authenticated users get a Wishlist entry; guests use session storage.
+    Returns JSON for HTMX.
+    """
+    try:
+        product = Products.objects.get(id=product_id)
+    except Products.DoesNotExist:
+        return JsonResponse({"error": "Product not found"}, status=404)
+
+    if request.user.is_authenticated:
+        Wishlist.objects.get_or_create(user=request.user, product=product)
+    else:
+        wishlist = request.session.get('wishlist', [])
+        if product_id not in wishlist:
+            wishlist.append(product_id)
+            request.session['wishlist'] = wishlist
+    # Return updated count
+    count = Wishlist.objects.filter(user=request.user).count() if request.user.is_authenticated else len(request.session.get('wishlist', []))
+    return JsonResponse({"success": True, "count": count})
+
+@require_POST
+def remove_from_wishlist(request, product_id):
+    """Remove a product from the wishlist (auth or session)."""
+    try:
+        product = Products.objects.get(id=product_id)
+    except Products.DoesNotExist:
+        return JsonResponse({"error": "Product not found"}, status=404)
+
+    if request.user.is_authenticated:
+        Wishlist.objects.filter(user=request.user, product=product).delete()
+    else:
+        wishlist = request.session.get('wishlist', [])
+        if product_id in wishlist:
+            wishlist.remove(product_id)
+            request.session['wishlist'] = wishlist
+    count = Wishlist.objects.filter(user=request.user).count() if request.user.is_authenticated else len(request.session.get('wishlist', []))
+    return JsonResponse({"success": True, "count": count})
+
+def wishlist_page(request):
+    """Render the wishlist page.
+    For guests, fetch products from session IDs.
+    """
+    if request.user.is_authenticated:
+        items = Wishlist.objects.filter(user=request.user).select_related('product')
+        products = [w.product for w in items]
+    else:
+        ids = request.session.get('wishlist', [])
+        products = Products.objects.filter(id__in=ids)
+    return render(request, 'wishlist.html', {'products': products})
+
+# Quick view modal - returns JSON for the JS modal
+def quick_view(request, product_id):
+    try:
+        product = Products.objects.get(id=product_id)
+    except Products.DoesNotExist:
+        return JsonResponse({'error': 'Product not found'}, status=404)
+    
+    # Build image URL
+    image_url = ''
+    if product.image:
+        try:
+            image_url = product.image.url
+        except Exception:
+            image_url = str(product.image)
+    
+    return JsonResponse({
+        'id': product.id,
+        'name': product.name,
+        'description': product.description if hasattr(product, 'description') else '',
+        'price': str(product.price),
+        'image_url': image_url,
+        'image': image_url,
+    })
 
 # Initialize Razorpay client
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))

@@ -1,0 +1,278 @@
+/* auth.css - Premium login page styles */
+/* Gradient background */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  /* background removed – use .login-page-bg for hero image */
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+/* Container split into hero and card */
+.login-page {
+  display: flex;
+  width: 100%;
+    min-height: 100vh;
+  background: transparent; /* remove body bg overlay */
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  position: relative; /* added */
+}
+
+/* Background image container */
+.login-page-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('/static/images/boat_premium_background.jpg');
+  background-size: contain; /* Show full image without cropping */
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1; /* behind content */
+}
+
+.login-hero {
+  flex: 1 1 50%;
+  background: url('../images/hero_bg.jpg') center/cover no-repeat;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-align: center;
+  padding: 2rem;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+.hero-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+}
+.hero-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+.hero-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+.hero-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin-top: 1rem;
+  position: relative;
+}
+/* Card */
+.login-card-container {
+  z-index: 10;
+  position: absolute;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  /* Ensure card does not exceed viewport */
+  max-width: 380px;
+  width: 100%;
+  padding: 2rem;
+}
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.login-header .logo {
+  width: 80px;
+  margin-bottom: 1rem;
+}
+.login-header h2 {
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+.login-header p {
+  color: #e0e0e0;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+/* Input group with floating label */
+.input-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.input-group input {
+  width: 100%;
+  padding: 1rem 2.5rem 1rem 1rem;
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: background 0.3s;
+}
+.input-group input:focus {
+  background: rgba(255, 255, 255, 0.35);
+}
+.input-group .floating-label {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #ddd;
+  transition: all 0.2s ease;
+}
+.input-group input:focus + .floating-label,
+.input-group input:not(:placeholder-shown) + .floating-label {
+  top: -0.5rem;
+  left: 0.75rem;
+  font-size: 0.75rem;
+  color: #fff;
+  background: rgba(0,0,0,0.4);
+  padding: 0 0.25rem;
+  border-radius: 4px;
+}
+.input-group .input-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ddd;
+  font-size: 1.2rem;
+}
+/* Password toggle */
+.toggle-password {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #ddd;
+}
+/* Options */
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+.remember-me {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.remember-me input {
+  margin-right: 0.5rem;
+}
+.forgot-link {
+  color: #fff;
+  text-decoration: underline;
+}
+/* Button */
+.btn-gradient {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(45deg, #ff6b6b, #f0e130);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+.spinner.visible { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Social login */
+.social-login {
+  margin-top: 1rem;
+}
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #444;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  font-weight: 500;
+  transition: background 0.3s, transform 0.2s;
+}
+.btn-google:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+}
+.google-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5rem;
+}
+.signup-link {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+.signup-link a {
+  color: #fff;
+  text-decoration: underline;
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .login-page { flex-direction: column; height: auto; }
+  .login-hero, .login-card-container {
+  z-index: 10; flex: none; width: 100%; }
+  .hero-title { font-size: 2rem; }
+  .hero-subtitle { font-size: 1rem; }
+  /* Hide background on mobile */
+  .login-page-bg { display: none; }
+  /* Center login card full width */
+  .login-card-container {
+  z-index: 10;
+    position: static;
+    transform: none;
+    right: auto;
+    top: auto;
+    margin: 2rem auto 0;
+    max-width: 380px;
+    width: 90%;
+    padding: 1rem;
+  }
+}

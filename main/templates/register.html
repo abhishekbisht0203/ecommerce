@@ -73,7 +73,7 @@
 
     const checkbox = document.getElementById("checkbox");
     if (!checkbox.checked) {
-      alert("You must agree to the terms and conditions.");
+      Swal.fire({icon: 'warning',title: 'Terms required',text: 'You must agree to the terms and conditions.'});
       return;
     }
 

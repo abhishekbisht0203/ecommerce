@@ -23,15 +23,5 @@
     {% endfor %}
   </div>
 </section>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script>
-  function addToCart(id) {
-    axios.post(`/addtocart/${id}/`)
-      .then((response) => {
-        alert("Item added to cart");
-        document.getElementById('cart-count').innerText = response.data.cart_count || '';
-      });
-  }
-</script>
 
 {% endblock %}

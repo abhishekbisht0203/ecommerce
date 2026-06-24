@@ -1,0 +1,147 @@
+{% load static menu_tags %}
+<header class="sticky top-0 z-[60] w-full shadow-sm">
+  <nav class="flex items-center justify-between px-4 lg:px-12 py-3 glass backdrop-blur-xl bg-white/80 dark:bg-white-900/80 transition-shadow duration-300" id="navbar">
+    <!-- Logo -->
+    <a href="{% url 'home' %}" class="flex items-center space-x-2 group shrink-0">
+      {% load static %}
+<img src="https://www.boat-lifestyle.com/cdn/shop/files/boAt_logo_black_24889e30-925c-4185-a028-9fef497a8e44.svg?v=1732879339" alt="Boat" class="w-16 h-12" style="transition: transform .3s ease;">
+    </a>
+
+    <!-- Desktop Links -->
+    {% get_menu_items as menu_items %}
+    <ul class="hidden md:flex space-x-8 text-base font-semibold">
+      {% for menu in menu_items %}
+      <li>
+        <a href="{{ menu.url }}" class="relative group {% if request.path == menu.url %}text-blue-600{% else %}text-black{% endif %} hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300">
+          {{ menu.name }}
+          <span class="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <!-- Actions -->
+    <div class="flex items-center space-x-4 lg:space-x-6">
+      
+      <!-- Search Form -->
+      <form action="{% url 'home' %}" method="GET" class="relative hidden sm:block">
+        <input type="search" name="q" placeholder="Search products..." class="w-48 lg:w-64 px-4 py-2 pl-10 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-md focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm text-black placeholder-gray-500 transition-all shadow-sm" value="{{ request.GET.q|default:'' }}">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+          </svg>
+        </div>
+      </form>
+
+      <!-- Cart Icon -->
+      <a href="{% url 'wishlist' %}" class="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <i class="fa-solid fa-heart text-xl text-black"></i>
+            <span class="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 border-2 border-white rounded-full -top-1 -right-1 dark:border-gray-900" id="wishlist-badge" style="display:none;">0</span>
+          </a>
+          <a href="{% if user.is_authenticated %}{% url 'cart' %}{% else %}{% url 'login' %}{% endif %}" class="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <i class="fa-solid fa-cart-shopping text-xl text-black"></i>
+        <span class="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 border-2 border-white rounded-full -top-1 -right-1 dark:border-gray-900" id="cart-badge">{{ cart_count|default:"0" }}</span>
+      </a>
+
+      <!-- Profile Dropdown -->
+      <div class="relative">
+        <button type="button" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown" data-dropdown-placement="bottom">
+          <span class="sr-only">Open user menu</span>
+          <i class="fa-regular fa-user text-xl text-black"></i>
+        </button>
+        <!-- Dropdown menu -->
+        <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600" id="user-dropdown">
+          {% if user.is_authenticated %}
+          <div class="px-4 py-3">
+            <span class="block text-sm text-black font-semibold">{{ user.username }}</span>
+            <span class="block text-sm text-gray-500 truncate dark:text-gray-400">{{ user.email }}</span>
+          </div>
+          <ul class="py-2" aria-labelledby="user-menu-button">
+            <li>
+              <a href="{% url 'orders' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">My Orders</a>
+            </li>
+            <li>
+              <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-500 dark:hover:text-white">Logout</a>
+            </li>
+          </ul>
+          {% else %}
+          <ul class="py-2" aria-labelledby="user-menu-button">
+            <li>
+              <a href="{% url 'login' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Login</a>
+            </li>
+            <li>
+              <a href="{% url 'register' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Register</a>
+            </li>
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+
+
+      <!-- Mobile Hamburger -->
+      <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Open menu">
+        <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Drawer -->
+  <div id="mobile-drawer" class="fixed inset-0 bg-black/40 backdrop-blur-md hidden z-[70]" aria-hidden="true">
+    <aside class="absolute right-0 w-64 h-full bg-white dark:bg-gray-900 glass p-6 transform translate-x-full transition-transform duration-300" aria-label="Mobile navigation">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-xl font-bold text-black">Menu</h2>
+        <button id="mobile-close" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      
+      <!-- Mobile Search -->
+      <form action="{% url 'home' %}" method="GET" class="relative mb-6">
+        <input type="search" name="q" placeholder="Search..." class="w-full px-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 text-black" value="{{ request.GET.q|default:'' }}">
+      </form>
+
+      <ul class="space-y-6 text-lg font-semibold">
+        {% for menu in menu_items %}
+        <li><a href="{{ menu.url }}" class="block {% if request.path == menu.url %}text-blue-600{% else %}text-black{% endif %} hover:text-blue-600 dark:hover:text-blue-400">{{ menu.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </aside>
+  </div>
+</header>
+
+<script>
+  // Theme toggle: add/remove "dark" class on the root element and persist preference
+  const themeToggle = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+  const stored = localStorage.getItem('theme');
+  if (stored === 'dark') root.classList.add('dark');
+  themeToggle.addEventListener('click', () => {
+    if (root.classList.contains('dark')) {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    } else {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    }
+  });
+  // Navbar scroll shadow
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 10) navbar.classList.add('shadow-lg');
+    else navbar.classList.remove('shadow-lg');
+  });
+
+  // Mobile drawer toggle
+  const drawer = document.getElementById('mobile-drawer');
+  const aside = drawer.querySelector('aside');
+  const openBtn = document.getElementById('mobile-menu-btn');
+  const closeBtn = document.getElementById('mobile-close');
+  
+  openBtn.addEventListener('click', () => {
+    drawer.classList.remove('hidden');
+    setTimeout(() => aside.classList.remove('translate-x-full'), 10);
+  });
+  
+  closeBtn.addEventListener('click', () => {
+    aside.classList.add('translate-x-full');
+    setTimeout(() => drawer.classList.add('hidden'), 300);
+  });
+</script>
