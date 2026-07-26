@@ -11,25 +11,25 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR.parent / 'frontend'
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-nxpxn#y#s5q6%%zm4hfiee3#506fl9_ok400*w!j)$cayaxsps'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-nxpxn#y#s5q6%%zm4hfiee3#506fl9_ok400*w!j)$cayaxsps')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-import os
-
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     ".onrender.com",
+    "ecommerce-shopiq.vercel.app",
     "localhost",
     "127.0.0.1",
 ]
@@ -40,6 +40,11 @@ ALLOWED_HOSTS = [
 # CORS configuration (allow all origins as requested)
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -55,14 +60,9 @@ INSTALLED_APPS = [
     'api',
 ]
 
-# RAZORPAY KEYS
-# PRODUCTION KEYS
-# RAZORPAY_KEY_ID = 'rzp_live_Spbt8FhdJm9PKm'
-# RAZORPAY_KEY_SECRET = 'chd1dmudGg5AufmooPBJn1Z6'
-
-# DEVELOPMENT KEYS
-RAZORPAY_KEY_ID = 'rzp_test_1BgnA1m3f2ddRq'
-RAZORPAY_KEY_SECRET = 'X5Ys4X9lKgrKpp6kI6pl5oBF'
+# RAZORPAY KEYS (set in .env)
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_1BgnA1m3f2ddRq')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'X5Ys4X9lKgrKpp6kI6pl5oBF')
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
@@ -172,12 +172,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'login'
 
-# For testing only (sends reset email to the terminal)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'abhishekbisht0203@gmail.com'
-EMAIL_HOST_PASSWORD = 'abc123456'
+# Email configuration (set in .env)
+if os.environ.get('EMAIL_HOST_USER'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
