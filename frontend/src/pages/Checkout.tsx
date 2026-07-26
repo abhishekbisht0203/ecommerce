@@ -1,14 +1,24 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import api from '../api/axios'
 import { useCart } from '../context/CartContext'
+import { FiUser, FiMapPin, FiMail, FiPhone, FiGlobe, FiShoppingBag } from 'react-icons/fi'
 import toast from 'react-hot-toast'
+import CheckoutHeader from '../components/checkout/CheckoutHeader'
+import OrderSummaryCard from '../components/checkout/OrderSummaryCard'
+import PaymentMethods from '../components/checkout/PaymentMethods'
+import { CheckoutInput, CheckoutSelect } from '../components/checkout/CheckoutInput'
+import CheckoutButton from '../components/checkout/CheckoutButton'
 
 export default function Checkout() {
   const { items, fetchCart } = useCart()
   const navigate = useNavigate()
-  const [address, setAddress] = useState({ firstName: '', lastName: '', address: '', city: '', state: '', zip: '', country: '' })
-  const [payWithRazorpay, setPayWithRazorpay] = useState(false)
+  const [address, setAddress] = useState({
+    firstName: '', lastName: '', email: '', phone: '',
+    address: '', city: '', state: '', zip: '', country: '',
+  })
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -17,15 +27,12 @@ export default function Checkout() {
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const tax = subtotal * 0.05
-  const shipping = 10
+  const shipping = subtotal >= 150 ? 0 : 10
   const total = subtotal + tax + shipping
 
   const loadRazorpayScript = () => {
     return new Promise<void>((resolve) => {
-      if ((window as any).Razorpay) {
-        resolve()
-        return
-      }
+      if ((window as any).Razorpay) { resolve(); return }
       const script = document.createElement('script')
       script.src = 'https://checkout.razorpay.com/v1/checkout.js'
       script.onload = () => resolve()
@@ -34,18 +41,22 @@ export default function Checkout() {
   }
 
   const handlePayment = async () => {
-    const addrFields = [address.firstName, address.lastName, address.address, address.city, address.state, address.zip, address.country]
+    const addrFields = [
+      address.firstName, address.lastName, address.address,
+      address.city, address.state, address.zip, address.country,
+    ]
     if (addrFields.some((f) => !f.trim())) {
       toast.error('Please fill all billing address fields')
       return
     }
-    if (!payWithRazorpay) {
-      toast.error('Please select Razorpay as payment method')
+    if (!paymentMethod) {
+      toast.error('Please select a payment method')
       return
     }
 
     setLoading(true)
     try {
+      await api.post('/sync-cart/', { items })
       await loadRazorpayScript()
       const res = await api.get('/payment/')
       const data = res.data
@@ -74,8 +85,12 @@ export default function Checkout() {
           }
         },
         modal: { ondismiss: () => navigate('/') },
-        prefill: { name: `${address.firstName} ${address.lastName}`, contact: '', email: '' },
-        theme: { color: '#3399cc' },
+        prefill: {
+          name: `${address.firstName} ${address.lastName}`,
+          contact: address.phone,
+          email: address.email,
+        },
+        theme: { color: '#7C3AED' },
       }
 
       const rzp = new (window as any).Razorpay(options)
@@ -88,99 +103,192 @@ export default function Checkout() {
   }
 
   if (items.length === 0) {
-    return <div className="text-center py-20 text-gray-500">Your cart is empty. <a href="/" className="text-blue-600 underline">Shop now</a></div>
+    return (
+      <div className="relative min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-gradient-to-br from-purple-100/60 to-pink-100/30 blur-3xl" />
+          <div className="absolute bottom-[-10%] left-[-5%] w-[30%] h-[30%] rounded-full bg-gradient-to-tr from-purple-50/40 to-pink-50/20 blur-3xl" />
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative text-center px-6"
+        >
+          <div className="w-20 h-20 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <FiShoppingBag className="w-8 h-8 text-purple-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
+          <p className="text-gray-400 mb-6">Add some items to get started with checkout</p>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <FiShoppingBag className="w-4 h-4" />
+            Browse Products
+          </a>
+        </motion.div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Order Summary</h2>
-              <div className="space-y-4 mb-6">
-                {items.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-4">
-                    <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center">
-                      <img src={item.thumbnail || ''} alt={item.title} className="h-12 w-12 object-contain" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-medium text-gray-800">{item.title}</h3>
-                      <p className="text-sm text-gray-500">Quantity: {item.quantity} x ₹{item.price.toFixed(2)}</p>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-gray-200 pt-4 space-y-2">
-                <div className="flex justify-between text-sm"><span className="text-gray-600">Subtotal</span><span className="font-medium">₹{subtotal.toFixed(2)}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-600">Shipping</span><span className="font-medium">₹{shipping}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-600">Tax</span><span className="font-medium">₹{tax.toFixed(2)}</span></div>
-                <div className="flex justify-between text-base font-medium pt-2 border-t mt-2"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
-              </div>
-            </div>
+    <div className="relative min-h-screen bg-[#F8FAFC]">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-gradient-to-br from-purple-100/60 to-pink-100/30 blur-3xl" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[30%] h-[30%] rounded-full bg-gradient-to-tr from-purple-50/40 to-pink-50/20 blur-3xl" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <CheckoutHeader />
+
+        <motion.h1
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1"
+        >
+          Checkout
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="text-sm text-gray-400 mb-10"
+        >
+          Complete your purchase securely
+        </motion.p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
+          <div className="lg:col-span-1 order-2 lg:order-1">
+            <OrderSummaryCard
+              items={items}
+              subtotal={subtotal}
+              shipping={shipping}
+              tax={tax}
+              total={total}
+            />
           </div>
 
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Payment Method</h2>
-              <div className="space-y-4">
-                <label className="flex items-center">
-                  <input type="checkbox" checked={payWithRazorpay} onChange={(e) => setPayWithRazorpay(e.target.checked)} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
-                  <span className="ml-3 text-sm font-medium text-gray-700">Pay with Razorpay</span>
-                </label>
-              </div>
+          <div className="lg:col-span-2 order-1 lg:order-2 space-y-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 p-6 sm:p-8"
+            >
+              <h2 className="text-lg font-semibold text-gray-900 mb-5">Payment Method</h2>
+              <PaymentMethods
+                selected={paymentMethod}
+                onSelect={(id) => setPaymentMethod(id)}
+              />
+            </motion.div>
 
-              <div className="border-t border-gray-200 pt-6 mt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Billing Address</h3>
-                <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                  <div className="sm:col-span-3">
-                    <label className="block text-sm font-medium text-gray-700">First name</label>
-                    <input value={address.firstName} onChange={(e) => setAddress({ ...address, firstName: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2 border" />
-                  </div>
-                  <div className="sm:col-span-3">
-                    <label className="block text-sm font-medium text-gray-700">Last name</label>
-                    <input value={address.lastName} onChange={(e) => setAddress({ ...address, lastName: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2 border" />
-                  </div>
-                  <div className="sm:col-span-6">
-                    <label className="block text-sm font-medium text-gray-700">Address</label>
-                    <input value={address.address} onChange={(e) => setAddress({ ...address, address: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2 border" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">City</label>
-                    <input value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2 border" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">State / Province</label>
-                    <input value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2 border" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">ZIP / Postal code</label>
-                    <input value={address.zip} onChange={(e) => setAddress({ ...address, zip: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2 border" />
-                  </div>
-                  <div className="sm:col-span-6">
-                    <label className="block text-sm font-medium text-gray-700">Country</label>
-                    <select value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2 border">
-                      <option value="">Select a country</option>
-                      <option>India</option>
-                      <option>United States</option>
-                      <option>Canada</option>
-                    </select>
-                  </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 p-6 sm:p-8"
+            >
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">Billing Address</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <CheckoutInput
+                  label="First Name"
+                  icon={<FiUser className="w-4 h-4" />}
+                  value={address.firstName}
+                  onChange={(e) => setAddress({ ...address, firstName: e.target.value })}
+                />
+                <CheckoutInput
+                  label="Last Name"
+                  icon={<FiUser className="w-4 h-4" />}
+                  value={address.lastName}
+                  onChange={(e) => setAddress({ ...address, lastName: e.target.value })}
+                />
+                <CheckoutInput
+                  label="Email"
+                  type="email"
+                  icon={<FiMail className="w-4 h-4" />}
+                  value={address.email}
+                  onChange={(e) => setAddress({ ...address, email: e.target.value })}
+                />
+                <CheckoutInput
+                  label="Phone"
+                  type="tel"
+                  icon={<FiPhone className="w-4 h-4" />}
+                  value={address.phone}
+                  onChange={(e) => setAddress({ ...address, phone: e.target.value })}
+                />
+                <div className="sm:col-span-2">
+                  <CheckoutInput
+                    label="Address"
+                    icon={<FiMapPin className="w-4 h-4" />}
+                    value={address.address}
+                    onChange={(e) => setAddress({ ...address, address: e.target.value })}
+                  />
                 </div>
-              </div>
-
-              <div className="mt-6">
-                <button
-                  onClick={handlePayment}
-                  disabled={loading}
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-md shadow hover:bg-blue-700 disabled:opacity-50"
+                <CheckoutInput
+                  label="City"
+                  value={address.city}
+                  onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                />
+                <CheckoutInput
+                  label="State / Province"
+                  value={address.state}
+                  onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                />
+                <CheckoutInput
+                  label="ZIP / Postal Code"
+                  value={address.zip}
+                  onChange={(e) => setAddress({ ...address, zip: e.target.value })}
+                />
+                <CheckoutSelect
+                  label="Country"
+                  icon={<FiGlobe className="w-4 h-4" />}
+                  value={address.country}
+                  onChange={(e) => setAddress({ ...address, country: e.target.value })}
                 >
-                  {loading ? 'Processing...' : 'Complete Payment'}
-                </button>
+                  <option value="">Select a country</option>
+                  <option value="India">India</option>
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                </CheckoutSelect>
               </div>
-            </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+            >
+              {[
+                { icon: '🛡️', label: 'Secure Payment' },
+                { icon: '🔒', label: 'SSL Encrypted' },
+                { icon: '🚚', label: 'Free Shipping' },
+                { icon: '↩️', label: 'Easy Returns' },
+              ].map((badge) => (
+                <div
+                  key={badge.label}
+                  className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-xl px-4 py-3 border border-gray-100"
+                >
+                  <span className="text-lg">{badge.icon}</span>
+                  <span className="text-xs font-medium text-gray-600">{badge.label}</span>
+                </div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <CheckoutButton
+                loading={loading}
+                onClick={handlePayment}
+              />
+              <p className="text-center text-xs text-gray-400 mt-3">
+                By completing this purchase, you agree to our Terms of Service and Privacy Policy
+              </p>
+            </motion.div>
           </div>
         </div>
       </div>

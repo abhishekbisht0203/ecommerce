@@ -1,70 +1,154 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import api from '../api/axios'
+import type { Order, OrderStatus } from '../types/order'
+import AnimatedBackground from '../components/orders/AnimatedBackground'
+import OrderHeader from '../components/orders/OrderHeader'
+import OrderStatsRow from '../components/orders/OrderStatsRow'
+import OrderFilters from '../components/orders/OrderFilters'
+import OrderTable from '../components/orders/OrderTable'
+import OrderCard from '../components/orders/OrderCard'
+import OrderPagination from '../components/orders/OrderPagination'
+import EmptyState from '../components/orders/EmptyState'
 
-interface Order {
-  id: number
-  product: string
-  quantity: number
-  total: string
-  status: string
-}
+type SortKey = 'newest' | 'oldest' | 'amount-desc' | 'amount-asc'
 
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeFilter, setActiveFilter] = useState<OrderStatus | 'All'>('All')
+  const [sortBy, setSortBy] = useState<SortKey>('newest')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
-    api.get('/orders/').then((res) => {
-      if (Array.isArray(res.data)) setOrders(res.data)
-      else if (res.data.orders) setOrders(res.data.orders)
-    })
+    let cancelled = false
+    setLoading(true)
+    api.get('/orders/')
+      .then((res) => {
+        if (cancelled) return
+        const data: Order[] = Array.isArray(res.data)
+          ? res.data
+          : res.data?.orders ?? []
+        setOrders(data)
+      })
+      .catch(() => {
+        if (!cancelled) setOrders([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
   }, [])
 
-  const statusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      Pending: 'bg-yellow-100 text-yellow-800',
-      Shipped: 'bg-blue-100 text-blue-800',
-      Delivered: 'bg-green-100 text-green-800',
+  const handleFilterChange = useCallback((filter: OrderStatus | 'All') => {
+    setActiveFilter(filter)
+    setCurrentPage(1)
+  }, [])
+
+  const handleSortChange = useCallback((sort: string) => {
+    setSortBy(sort as SortKey)
+    setCurrentPage(1)
+  }, [])
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size)
+    setCurrentPage(1)
+  }, [])
+
+  const filteredOrders = useMemo(() => {
+    let result = [...orders]
+    if (activeFilter !== 'All') {
+      result = result.filter((o) => o.status === activeFilter)
     }
-    return `inline-block ${colors[status] || 'bg-gray-100 text-gray-800'} text-xs font-semibold px-3 py-1 rounded-full`
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest': return b.id - a.id
+        case 'oldest': return a.id - b.id
+        case 'amount-desc': return parseFloat(b.total) - parseFloat(a.total)
+        case 'amount-asc': return parseFloat(a.total) - parseFloat(b.total)
+        default: return 0
+      }
+    })
+    return result
+  }, [orders, activeFilter, sortBy])
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const paginatedOrders = filteredOrders.slice(
+    (safeCurrentPage - 1) * pageSize,
+    safeCurrentPage * pageSize,
+  )
+
+  const stats = useMemo(() => ({
+    totalOrders: orders.length,
+    totalSpent: orders.reduce((sum, o) => sum + parseFloat(o.total), 0),
+    pendingCount: orders.filter((o) => o.status === 'Pending').length,
+    deliveredCount: orders.filter((o) => o.status === 'Delivered').length,
+  }), [orders])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen py-8">
+        <AnimatedBackground />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-10">
+            <div className="h-12 w-72 bg-gradient-to-r from-purple-200 to-pink-200 rounded-xl animate-pulse" />
+            <div className="h-5 w-56 bg-gray-200 rounded-lg mt-3 animate-pulse" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-28 rounded-2xl bg-white/60 animate-pulse" />
+            ))}
+          </div>
+          <div className="h-10 w-96 bg-white/60 rounded-full animate-pulse mb-6" />
+          <div className="h-96 rounded-2xl bg-white/60 animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
+  if (orders.length === 0) {
+    return (
+      <>
+        <AnimatedBackground />
+        <EmptyState />
+      </>
+    )
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex items-center justify-between mb-10">
-        <h2 className="text-3xl font-bold text-gray-800">Order History</h2>
-        <Link to="/" className="inline-block bg-indigo-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
-          &larr; Back to Dashboard
-        </Link>
-      </div>
-
-      <div className="overflow-x-auto bg-white rounded-2xl shadow-xl p-6">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Order ID</th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Product</th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Quantity</th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Total</th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 text-gray-700">
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-50 transition">
-                <td className="px-6 py-4 font-medium">{order.id}</td>
-                <td className="px-6 py-4">{order.product}</td>
-                <td className="px-6 py-4">{order.quantity}</td>
-                <td className="px-6 py-4 font-semibold text-green-600">₹{order.total}</td>
-                <td className="px-6 py-4"><span className={statusBadge(order.status)}>{order.status}</span></td>
-              </tr>
+    <>
+      <AnimatedBackground />
+      <div className="min-h-screen py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <OrderHeader />
+          <OrderStatsRow {...stats} />
+          <OrderFilters
+            activeFilter={activeFilter}
+            sortBy={sortBy}
+            onFilterChange={handleFilterChange}
+            onSortChange={handleSortChange}
+          />
+          <OrderTable orders={paginatedOrders} />
+          <div className="flex flex-col gap-3 md:hidden">
+            {paginatedOrders.map((order, index) => (
+              <OrderCard key={order.id} order={order} index={index} />
             ))}
-            {orders.length === 0 && (
-              <tr><td colSpan={5} className="text-center px-6 py-8 text-gray-500">You don't have any orders yet.</td></tr>
-            )}
-          </tbody>
-        </table>
+          </div>
+          <OrderPagination
+            currentPage={safeCurrentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
+        </div>
       </div>
-    </div>
+    </>
   )
 }

@@ -330,9 +330,58 @@ def quick_view(request, product_id):
         'image_url': image_url,
         'image': image_url,
     })
-
 # Initialize Razorpay client
+
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+
+@csrf_exempt
+@login_required
+def sync_cart(request):
+    """Sync frontend localStorage cart to backend Cart model before payment."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        items = data.get("items", [])
+    except (json.JSONDecodeError, TypeError) as e:
+        return JsonResponse({"error": f"Invalid JSON: {e}"}, status=400)
+
+    if not items:
+        return JsonResponse({"error": "Cart is empty"}, status=400)
+
+    user = request.user
+
+    Cart.objects.filter(user=user).delete()
+
+    for item in items:
+        product_id = item.get("id")
+        quantity = item.get("quantity", 1)
+        title = item.get("title", "")
+        price = item.get("price", 0)
+        thumbnail = item.get("thumbnail", "")
+
+        product, _ = Products.objects.get_or_create(
+            id=product_id,
+            defaults={
+                "name": title,
+                "price": price,
+                "image": thumbnail,
+                "description": title,
+                "category": "ecommerce",
+            }
+        )
+
+        Cart.objects.create(
+            user=user,
+            product=product,
+            quantity=quantity,
+            total=int(price * quantity),
+        )
+
+    return JsonResponse({"success": True, "message": "Cart synced successfully", "cart_count": items.__len__()})
+
 
 @login_required
 def payment(request):
