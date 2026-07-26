@@ -37,12 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = async (username: string, password: string, remember?: boolean) => {
-    const formData = new FormData()
-    formData.append('username', username)
-    formData.append('password', password)
-    if (remember) formData.append('remember', 'on')
-
-    await api.post('/login/', formData)
+    await api.post('/login/', { username, password, remember })
     await checkAuth()
   }
 

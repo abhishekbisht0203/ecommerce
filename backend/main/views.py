@@ -139,7 +139,7 @@ def login_user(request):
     if request.method == 'POST':
         try:
             username = _get_param(request, 'username', '').strip()
-            password = _get_param(request, 'password', '').strip()
+            password = _get_param(request, 'password', '')
             raw_remember = _get_param(request, 'remember')
             if isinstance(raw_remember, str):
                 remember = raw_remember.lower() not in ('', 'false', '0')

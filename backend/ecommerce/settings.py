@@ -64,7 +64,13 @@ INSTALLED_APPS = [
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_1BgnA1m3f2ddRq')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'X5Ys4X9lKgrKpp6kI6pl5oBF')
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://ecommerce-shopiq.vercel.app',
+    'https://*.onrender.com',
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

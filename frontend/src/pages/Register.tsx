@@ -43,13 +43,11 @@ export default function Register() {
 
     setLoading(true)
     try {
-      const formData = new FormData()
-      formData.append('username', form.username)
-      formData.append('email', form.email)
-      formData.append('password', form.password)
-      formData.append('rpassword', form.rpassword)
-
-      const res = await api.post('/register/', formData)
+      const res = await api.post('/register/', {
+        username: form.username,
+        email: form.email,
+        password: form.password,
+      })
       if (res.data.success) {
         toast.success(res.data.message || 'Account created successfully!')
         navigate(res.data.redirect || '/login')
