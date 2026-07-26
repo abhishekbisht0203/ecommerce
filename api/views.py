@@ -1,8 +1,20 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
 from .models import WishlistItem, Cart
 from .serializers import ProductSerializer, WishlistItemSerializer, CartSerializer
 from main.models import Products
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def current_user(request):
+    user = request.user
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+    })
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     """Read‑only endpoints for product listings and detail view."""

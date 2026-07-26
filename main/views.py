@@ -4,31 +4,31 @@ from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpRe
 from django.contrib.auth.models import User
 from .models import *
 from decimal import Decimal
-#CSRF_EXCEMPT DECORATOR
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.conf import settings
+from pathlib import Path
 import razorpay
-from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import Cart, Products
 import logging
 
 # Create your views here.
 
-def index(request):
-    query = request.GET.get('q', '')  # Get search query from URL
-    products = Products.objects.all()
+def serve_react(request):
+    """Serve the React SPA index.html for any frontend route."""
+    index_path = Path(settings.REACT_BUILD_DIR) / 'index.html'
+    if index_path.exists():
+        with open(index_path, 'r', encoding='utf-8') as f:
+            return HttpResponse(f.read(), content_type='text/html')
+    return HttpResponse(
+        "Frontend not built yet. Run `cd frontend && npm run build` then refresh.",
+        status=501,
+    )
 
-    if query:
-        products = products.filter(name__icontains=query)  # Filter by name contains
-    # Determine wishlist product IDs for the current user (session for guests)
-    if request.user.is_authenticated:
-        wishlist_ids = list(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True))
-    else:
-        wishlist_ids = request.session.get('wishlist', [])
-    return render(request, "index.html", {"products" : products, "query": query, "wishlist_ids": wishlist_ids})
+def index(request):
+    return serve_react(request)
 
 
 def form(request):
@@ -46,9 +46,9 @@ def form(request):
             image=image,
             category=category
         )
-        return redirect('form')  # Prevents duplicate save on refresh
+        return JsonResponse({"success": True})
 
-    return render(request, "form.html")
+    return serve_react(request)
 
 @csrf_exempt
 @login_required
@@ -101,38 +101,16 @@ def increase_quantity(request, product_id):
 
 
 def product(request):
-    # Existing generic product list view (kept for compatibility)
-    products = Products.objects.all()
-    return render(request, "product.html", {"products": products})
+    return serve_react(request)
 
 def product_detail(request, product_id):
-    """Detailed view for a single product with image gallery."""
-    try:
-        product = Products.objects.get(id=product_id)
-    except Products.DoesNotExist:
-        return HttpResponseBadRequest("Product not found")
-    images = product.images.all()
-    return render(request, "product_detail.html", {"product": product, "images": images})
-    # List all products (used for a generic product listing page)
-    products = Products.objects.all()
-    return render(request, "product.html", {"products": products})
+    return serve_react(request)
 
 @login_required
 def cart(request):
-    
-    subtotal = Decimal('0')
-    cart_items = Cart.objects.filter(user = request.user)
-    tax = Decimal('0.05')
-    shipping_charges = 10
-    for item in cart_items:
-        subtotal = subtotal + item.total
-    tax = subtotal * tax
-    total = subtotal + tax + shipping_charges
-    return render (request, "cart.html", {"cart_items": cart_items, "subtotal": subtotal, 'tax':tax, 'shipping_charges':shipping_charges, 'total':total})
+    return serve_react(request)
 
 
-
-from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def login_user(request):
@@ -141,7 +119,6 @@ def login_user(request):
         password = request.POST.get('password', '').strip()
         remember = request.POST.get('remember')
 
-        # Server‑side validation
         if not username:
             return JsonResponse({'error': 'Username is required'}, status=400)
         if not password:
@@ -150,17 +127,13 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-
-            # If "remember me" not checked, expire on browser close
             if not remember:
                 request.session.set_expiry(0)
-
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True, 'user': {'id': user.id, 'username': user.username, 'email': user.email}})
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
-    # Render the login page for GET requests
-    return render(request, 'login_user.html')
+    return serve_react(request)
 
 
 def logout_user(request):
@@ -180,13 +153,12 @@ def register(request):
         elif User.objects.filter(email=email).exists():
             return JsonResponse({"error": "This email already exists"}, status=400)
 
-        # Create the user
         user = User.objects.create_user(username=username, password=password, email=email)
 
         if user:
             return JsonResponse({"success": "User registered successfully", "redirect": "/login/"}, status=200)
 
-    return render(request, "register.html")
+    return serve_react(request)
 
     
 
@@ -276,16 +248,7 @@ def remove_from_wishlist(request, product_id):
     return JsonResponse({"success": True, "count": count})
 
 def wishlist_page(request):
-    """Render the wishlist page.
-    For guests, fetch products from session IDs.
-    """
-    if request.user.is_authenticated:
-        items = Wishlist.objects.filter(user=request.user).select_related('product')
-        products = [w.product for w in items]
-    else:
-        ids = request.session.get('wishlist', [])
-        products = Products.objects.filter(id__in=ids)
-    return render(request, 'wishlist.html', {'products': products})
+    return serve_react(request)
 
 # Quick view modal - returns JSON for the JS modal
 def quick_view(request, product_id):
@@ -314,47 +277,49 @@ def quick_view(request, product_id):
 # Initialize Razorpay client
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
+@login_required
 def payment(request):
-    if request.method == 'GET':
-        # Fetch cart items for the logged-in user
-        cart_items = Cart.objects.filter(user=request.user)
-        
-        if not cart_items.exists():
-            return HttpResponseBadRequest("Your cart is empty")
+    cart_items = Cart.objects.filter(user=request.user)
+    
+    if not cart_items.exists():
+        return JsonResponse({"error": "Cart is empty"}, status=400)
 
-        # Calculate subtotal
-        subtotal = cart_items.aggregate(total=Sum('total'))['total'] or Decimal(0)
-        
-        # Tax & Shipping Charges
-        tax = subtotal * Decimal('0.05')
-        shipping_charges = Decimal(10)
-        
-        # Final total
-        total = subtotal + tax + shipping_charges
-        
-        # Convert total to paisa (Razorpay works in paisa)
-        amount_in_paisa = int(total * 100)
+    subtotal = cart_items.aggregate(total=Sum('total'))['total'] or Decimal(0)
+    tax = subtotal * Decimal('0.05')
+    shipping_charges = Decimal(10)
+    total = subtotal + tax + shipping_charges
+    amount_in_paisa = int(total * 100)
 
-        # Create a Razorpay order
-        payment_order = razorpay_client.order.create({
-            'amount': amount_in_paisa,
-            'currency': 'INR',
-            'payment_capture': '1'  # Auto capture after successful payment
-        })
+    payment_order = razorpay_client.order.create({
+        'amount': amount_in_paisa,
+        'currency': 'INR',
+        'payment_capture': '1',
+    })
 
-        context = {
-            'razorpay_key_id': settings.RAZORPAY_KEY_ID,  # Razorpay key id
-            'order_id': payment_order['id'],  # The Razorpay order id
-            'amount': total,  # Show the total in INR
-            'subtotal': subtotal,
-            'tax': tax,
-            'shipping_charges': shipping_charges,
-            'cart': cart_items  # Pass cart items to template
+    cart_data = [
+        {
+            "id": item.id,
+            "product": {
+                "id": item.product.id,
+                "name": item.product.name,
+                "price": str(item.product.price),
+                "image": item.product.image,
+            },
+            "quantity": item.quantity,
+            "total": str(item.total),
         }
+        for item in cart_items
+    ]
 
-        return render(request, 'payment.html', context)
-
-    return HttpResponseBadRequest("Invalid Request")
+    return JsonResponse({
+        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+        'order_id': payment_order['id'],
+        'amount': float(total),
+        'subtotal': float(subtotal),
+        'tax': float(tax),
+        'shipping_charges': float(shipping_charges),
+        'cart': cart_data,
+    })
 
 
 
@@ -440,28 +405,38 @@ def payment_callback(request):
 
 @csrf_exempt
 def payment_success(request):
-    payment_id = request.POST.get('razorpay_payment_id')
-    order_id = request.POST.get('razorpay_order_id')
-    return render(request, 'payment_success.html', {'payment_id': payment_id, 'order_id': order_id})
+    if request.method == 'POST':
+        payment_id = request.POST.get('razorpay_payment_id')
+        order_id = request.POST.get('razorpay_order_id')
+        return JsonResponse({'payment_id': payment_id, 'order_id': order_id})
+    return serve_react(request)
 
 
 @login_required
 def orders(request):
-    orders = Orders.objects.filter(user=request.user)
-    return render(request, "orders.html", {"orders": orders})
+    if request.method == 'GET':
+        orders_qs = Orders.objects.filter(user=request.user)
+        data = [
+            {
+                "id": o.id,
+                "product": str(o.product),
+                "quantity": o.quantity,
+                "total": str(o.total),
+                "status": o.status,
+            }
+            for o in orders_qs
+        ]
+        return JsonResponse({"orders": data})
+    return serve_react(request)
 
 def powerbank_view(request):
-    powerbanks = Products.objects.filter(category__iexact="Power Bank")
-    return render(request, 'powerbank.html', {'products': powerbanks})
+    return serve_react(request)
 
 def bags_view(request):
-    bags = Products.objects.filter(category__iexact="Bag")
-    return render(request, 'bags.html', {'products': bags})
+    return serve_react(request)
 
 def electronics_view(request):
-    electronics = Products.objects.filter(category__iexact="Electronics")
-    return render(request, 'electronics.html', {'products': electronics})
+    return serve_react(request)
 
 def gaming_view(request):
-    gaming = Products.objects.filter(category__iexact="Gaming")
-    return render(request, 'gaming.html', {'products': gaming})
+    return serve_react(request)
