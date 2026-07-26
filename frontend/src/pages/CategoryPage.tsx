@@ -26,12 +26,13 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (!category) return
+    const cat: string = category
     let cancelled = false
     async function load() {
       setLoading(true)
       setError('')
       try {
-        const data = await fetchProductsByCategory(category, 194, 0)
+        const data = await fetchProductsByCategory(cat, 194, 0)
         if (!cancelled) setProducts(data.products)
       } catch {
         if (!cancelled) setError('Failed to load category products')

@@ -19,13 +19,14 @@ export default function ProductDetail() {
 
   useEffect(() => {
     if (!id) return
+    const productId: string = id
     let cancelled = false
     async function load() {
       setLoading(true)
       setError('')
       setSelectedImage(0)
       try {
-        const data = await fetchProduct(parseInt(id, 10))
+        const data = await fetchProduct(parseInt(productId, 10))
         if (!cancelled) setProduct(data)
       } catch {
         if (!cancelled) setError('Failed to load product details')

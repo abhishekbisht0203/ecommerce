@@ -3,7 +3,7 @@ export const fadeIn = {
   visible: (i = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, delay: i * 0.1, ease: 'easeOut' },
+    transition: { duration: 0.5, delay: i * 0.1, ease: 'easeOut' as const },
   }),
 }
 
@@ -16,7 +16,7 @@ export const staggerContainer = {
 
 export const scaleOnHover = {
   rest: { scale: 1 },
-  hover: { scale: 1.03, transition: { duration: 0.3, ease: 'easeOut' } },
+  hover: { scale: 1.03, transition: { duration: 0.3, ease: 'easeOut' as const } },
 }
 
 export const slideUp = {
@@ -24,7 +24,7 @@ export const slideUp = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: 'easeOut' },
+    transition: { duration: 0.6, ease: 'easeOut' as const },
   },
 }
 
