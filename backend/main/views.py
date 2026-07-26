@@ -13,6 +13,7 @@ import razorpay
 from .models import Cart, Products
 import logging
 from decimal import Decimal, ROUND_HALF_UP
+from rest_framework.authtoken.models import Token
 
 logger = logging.getLogger(__name__)
 
@@ -163,9 +164,11 @@ def login_user(request):
                 login(request, user)
                 if not remember:
                     request.session.set_expiry(0)
+                token, _ = Token.objects.get_or_create(user=user)
                 return JsonResponse({
                     'success': True,
                     'message': 'Login successful.',
+                    'token': token.key,
                     'user': {'id': user.id, 'username': user.username, 'email': user.email}
                 })
             else:
@@ -179,6 +182,13 @@ def login_user(request):
 
 
 def logout_user(request):
+    auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+    if auth_header.startswith('Token '):
+        try:
+            token = Token.objects.get(key=auth_header[6:])
+            token.delete()
+        except Token.DoesNotExist:
+            pass
     logout(request)
     return JsonResponse({"success": True, "message": "Logged out successfully."})
 
@@ -208,7 +218,15 @@ def register(request):
 
             user = User.objects.create_user(username=username, password=password, email=email)
 
-            return JsonResponse({"success": True, "message": "Account created successfully!", "redirect": "/login"}, status=201)
+            login(request, user)
+            token, _ = Token.objects.get_or_create(user=user)
+            return JsonResponse({
+                "success": True,
+                "message": "Account created successfully!",
+                "token": token.key,
+                "user": {"id": user.id, "username": user.username, "email": user.email},
+                "redirect": "/"
+            }, status=201)
 
         except Exception as e:
             logger.error(f"Registration error: {e}", exc_info=True)

@@ -7,6 +7,7 @@ import { FaApple } from 'react-icons/fa'
 import { FiGithub } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import api from '../api/axios'
+import { useAuth } from '../context/AuthContext'
 import AnimatedBackground from '../components/auth/AnimatedBackground'
 import LeftPanel from '../components/auth/LeftPanel'
 import AuthCard from '../components/auth/AuthCard'
@@ -17,6 +18,7 @@ import { fadeInUp, staggerContainer } from '../lib/animations'
 
 export default function Register() {
   const navigate = useNavigate()
+  const { checkAuth } = useAuth()
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -49,8 +51,12 @@ export default function Register() {
         password: form.password,
       })
       if (res.data.success) {
+        if (res.data.token) {
+          localStorage.setItem('auth_token', res.data.token)
+        }
         toast.success(res.data.message || 'Account created successfully!')
-        navigate(res.data.redirect || '/login')
+        await checkAuth()
+        navigate(res.data.redirect || '/')
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || err.response?.data?.error || 'Registration failed')

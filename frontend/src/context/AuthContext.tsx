@@ -37,12 +37,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = async (username: string, password: string, remember?: boolean) => {
-    await api.post('/login/', { username, password, remember })
+    const res = await api.post('/login/', { username, password, remember })
+    if (res.data.token) {
+      localStorage.setItem('auth_token', res.data.token)
+    }
     await checkAuth()
   }
 
   const logout = async () => {
-    await api.get('/logout/')
+    localStorage.removeItem('auth_token')
+    try {
+      await api.get('/logout/')
+    } catch {
+      // best-effort: session logout may fail cross-origin
+    }
     setUser(null)
   }
 
