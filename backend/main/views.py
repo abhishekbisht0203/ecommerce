@@ -3,17 +3,16 @@ from django.contrib.auth import authenticate, login , logout
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.contrib.auth.models import User
 from .models import *
-from decimal import Decimal
+import json
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.conf import settings
 from pathlib import Path
 import razorpay
-import json
 from .models import Cart, Products
 import logging
-import json
+from decimal import Decimal, ROUND_HALF_UP
 
 logger = logging.getLogger(__name__)
 
@@ -373,11 +372,12 @@ def sync_cart(request):
             }
         )
 
+        line_total = Decimal(str(price)) * Decimal(str(quantity))
         Cart.objects.create(
             user=user,
             product=product,
             quantity=quantity,
-            total=int(price * quantity),
+            total=line_total.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         )
 
     return JsonResponse({"success": True, "message": "Cart synced successfully", "cart_count": items.__len__()})
@@ -390,11 +390,15 @@ def payment(request):
     if not cart_items.exists():
         return JsonResponse({"error": "Cart is empty"}, status=400)
 
+    FREE_SHIPPING_THRESHOLD = Decimal('150')
+    SHIPPING_COST = Decimal('10')
+    TAX_RATE = Decimal('0.05')
+
     subtotal = cart_items.aggregate(total=Sum('total'))['total'] or Decimal(0)
-    tax = subtotal * Decimal('0.05')
-    shipping_charges = Decimal(10)
+    tax = (subtotal * TAX_RATE).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    shipping_charges = Decimal('0') if subtotal >= FREE_SHIPPING_THRESHOLD else SHIPPING_COST
     total = subtotal + tax + shipping_charges
-    amount_in_paisa = int(total * 100)
+    amount_in_paisa = int((total * Decimal('100')).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
 
     payment_order = razorpay_client.order.create({
         'amount': amount_in_paisa,
@@ -420,10 +424,11 @@ def payment(request):
     return JsonResponse({
         'razorpay_key_id': settings.RAZORPAY_KEY_ID,
         'order_id': payment_order['id'],
-        'amount': float(total),
-        'subtotal': float(subtotal),
-        'tax': float(tax),
-        'shipping_charges': float(shipping_charges),
+        'amount_paisa': amount_in_paisa,
+        'amount': str(total),
+        'subtotal': str(subtotal),
+        'tax': str(tax),
+        'shipping_charges': str(shipping_charges),
         'cart': cart_data,
     })
 
@@ -467,10 +472,13 @@ def payment_callback(request):
             if not cart_items.exists():
                 return JsonResponse({'status': 'failure', 'message': 'Cart is already empty'}, status=400)
 
-            # Calculate total price
+            FREE_SHIPPING_THRESHOLD = Decimal('150')
+            SHIPPING_COST = Decimal('10')
+            TAX_RATE = Decimal('0.05')
+
             subtotal = cart_items.aggregate(total=Sum('total'))['total'] or Decimal(0)
-            tax = subtotal * Decimal('0.05')  # 5% tax
-            shipping_charges = Decimal(10)
+            tax = (subtotal * TAX_RATE).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            shipping_charges = Decimal('0') if subtotal >= FREE_SHIPPING_THRESHOLD else SHIPPING_COST
             total = subtotal + tax + shipping_charges
 
             # Save Payment Record

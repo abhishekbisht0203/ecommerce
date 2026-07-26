@@ -63,7 +63,7 @@ export default function Checkout() {
 
       const options = {
         key: data.razorpay_key_id,
-        amount: data.amount * 100,
+        amount: data.amount_paisa,
         currency: 'INR',
         name: 'CADL',
         image: 'https://cadl.in/public/website/favicon2.png',
