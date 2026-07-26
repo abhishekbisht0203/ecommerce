@@ -51,11 +51,11 @@ export default function Register() {
 
       const res = await api.post('/register/', formData)
       if (res.data.success) {
-        toast.success('Account created successfully!')
+        toast.success(res.data.message || 'Account created successfully!')
         navigate(res.data.redirect || '/login')
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Registration failed')
+      toast.error(err.response?.data?.message || err.response?.data?.error || 'Registration failed')
     } finally {
       setLoading(false)
     }

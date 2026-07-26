@@ -42,9 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     formData.append('password', password)
     if (remember) formData.append('remember', 'on')
 
-    await api.post('/login/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    await api.post('/login/', formData)
     await checkAuth()
   }
 

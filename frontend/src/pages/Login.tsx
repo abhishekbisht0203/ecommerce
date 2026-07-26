@@ -39,7 +39,7 @@ export default function Login() {
       toast.success('Welcome back!')
       navigate('/')
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Invalid credentials')
+      toast.error(err.response?.data?.message || err.response?.data?.error || 'Invalid credentials')
     } finally {
       setLoading(false)
     }

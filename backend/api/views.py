@@ -1,7 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from .models import WishlistItem, Cart
+from .models import WishlistItem
+from main.models import Cart
 from .serializers import ProductSerializer, WishlistItemSerializer, CartSerializer
 from main.models import Products
 

@@ -13,6 +13,28 @@ import razorpay
 import json
 from .models import Cart, Products
 import logging
+import json
+
+logger = logging.getLogger(__name__)
+
+
+def _get_json_data(request):
+    """Parse JSON body if Content-Type is application/json, else return None."""
+    if request.method == "POST" and request.content_type == "application/json":
+        try:
+            return json.loads(request.body)
+        except (json.JSONDecodeError, AttributeError, UnicodeDecodeError):
+            return None
+    return None
+
+
+def _get_param(request, name, default=None):
+    """Get a parameter from either POST data or parsed JSON body."""
+    data = _get_json_data(request)
+    if data is not None:
+        return data.get(name, default)
+    return request.POST.get(name, default)
+
 
 # Create your views here.
 
@@ -115,48 +137,83 @@ def cart(request):
 @csrf_exempt
 def login_user(request):
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        password = request.POST.get('password', '').strip()
-        remember = request.POST.get('remember')
+        try:
+            username = _get_param(request, 'username', '').strip()
+            password = _get_param(request, 'password', '').strip()
+            raw_remember = _get_param(request, 'remember')
+            if isinstance(raw_remember, str):
+                remember = raw_remember.lower() not in ('', 'false', '0')
+            else:
+                remember = bool(raw_remember)
 
-        if not username:
-            return JsonResponse({'error': 'Username is required'}, status=400)
-        if not password:
-            return JsonResponse({'error': 'Password is required'}, status=400)
+            if not username:
+                return JsonResponse({'success': False, 'message': 'Username or email is required.'}, status=400)
+            if not password:
+                return JsonResponse({'success': False, 'message': 'Password is required.'}, status=400)
 
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            if not remember:
-                request.session.set_expiry(0)
-            return JsonResponse({'success': True, 'user': {'id': user.id, 'username': user.username, 'email': user.email}})
-        else:
-            return JsonResponse({'error': 'Invalid credentials'}, status=401)
+            auth_username = username
+            if '@' in username:
+                try:
+                    user_obj = User.objects.get(email=username)
+                    auth_username = user_obj.username
+                except User.DoesNotExist:
+                    return JsonResponse({'success': False, 'message': 'Invalid credentials.'}, status=401)
+
+            user = authenticate(request, username=auth_username, password=password)
+            if user is not None:
+                login(request, user)
+                if not remember:
+                    request.session.set_expiry(0)
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Login successful.',
+                    'user': {'id': user.id, 'username': user.username, 'email': user.email}
+                })
+            else:
+                return JsonResponse({'success': False, 'message': 'Invalid credentials.'}, status=401)
+
+        except Exception as e:
+            logger.error(f"Login error: {e}", exc_info=True)
+            return JsonResponse({'success': False, 'message': 'Login failed. Please try again later.'}, status=500)
 
     return serve_react(request)
 
 
 def logout_user(request):
     logout(request)
-    return redirect("home")
+    return JsonResponse({"success": True, "message": "Logged out successfully."})
 
 
 
+@csrf_exempt
 def register(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        email = request.POST.get("email")
+        try:
+            username = _get_param(request, "username", "").strip()
+            password = _get_param(request, "password", "")
+            email = _get_param(request, "email", "").strip()
 
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({"error": "This username already exists"}, status=400)
-        elif User.objects.filter(email=email).exists():
-            return JsonResponse({"error": "This email already exists"}, status=400)
+            if not username:
+                return JsonResponse({"success": False, "message": "Full name is required."}, status=400)
+            if not email:
+                return JsonResponse({"success": False, "message": "Email is required."}, status=400)
+            if not password:
+                return JsonResponse({"success": False, "message": "Password is required."}, status=400)
+            if len(password) < 8:
+                return JsonResponse({"success": False, "message": "Password must be at least 8 characters."}, status=400)
 
-        user = User.objects.create_user(username=username, password=password, email=email)
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({"success": False, "message": "This username already exists."}, status=409)
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({"success": False, "message": "This email already exists."}, status=409)
 
-        if user:
-            return JsonResponse({"success": "User registered successfully", "redirect": "/login/"}, status=200)
+            user = User.objects.create_user(username=username, password=password, email=email)
+
+            return JsonResponse({"success": True, "message": "Account created successfully!", "redirect": "/login"}, status=201)
+
+        except Exception as e:
+            logger.error(f"Registration error: {e}", exc_info=True)
+            return JsonResponse({"success": False, "message": "Registration failed. Please try again later."}, status=500)
 
     return serve_react(request)
 
