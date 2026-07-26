@@ -1,81 +1,264 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import api from '../api/axios'
+import { motion } from 'framer-motion'
+import { FiUser, FiMail, FiLock } from 'react-icons/fi'
+import { FcGoogle } from 'react-icons/fc'
+import { FaApple } from 'react-icons/fa'
+import { FiGithub } from 'react-icons/fi'
 import toast from 'react-hot-toast'
+import api from '../api/axios'
+import AnimatedBackground from '../components/auth/AnimatedBackground'
+import LeftPanel from '../components/auth/LeftPanel'
+import AuthCard from '../components/auth/AuthCard'
+import PremiumInput from '../components/auth/PremiumInput'
+import PremiumButton from '../components/auth/PremiumButton'
+import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndicator'
+import { fadeInUp, staggerContainer } from '../lib/animations'
 
 export default function Register() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ username: '', email: '', password: '', rpassword: '' })
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    rpassword: '',
+  })
   const [agree, setAgree] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!agree) {
-      toast.error('You must agree to the terms and conditions')
-      return
-    }
-    if (form.password !== form.rpassword) {
-      toast.error('Passwords do not match')
-      return
-    }
+
+    const newErrors: Record<string, string> = {}
+    if (!form.username.trim()) newErrors.username = 'Full name is required'
+    if (!form.email.trim()) newErrors.email = 'Email is required'
+    if (!form.password) newErrors.password = 'Password is required'
+    if (form.password !== form.rpassword)
+      newErrors.rpassword = 'Passwords do not match'
+    if (!agree) newErrors.agree = 'You must agree to the terms'
+    setErrors(newErrors)
+
+    if (Object.keys(newErrors).length > 0) return
+
+    setLoading(true)
     try {
-      const res = await api.post('/register/', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      const formData = new FormData()
+      formData.append('username', form.username)
+      formData.append('email', form.email)
+      formData.append('password', form.password)
+      formData.append('rpassword', form.rpassword)
+
+      const res = await api.post('/register/', formData)
       if (res.data.success) {
-        toast.success('Registered successfully')
+        toast.success('Account created successfully!')
         navigate(res.data.redirect || '/login')
       }
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Registration failed')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 px-4" style={{ minHeight: 'calc(100vh - 6rem)' }}>
-      <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
-        <header className="mb-6 text-center">
-          <h2 className="text-3xl font-bold text-purple-700">Create Your Account</h2>
-          <p className="text-sm text-gray-500 mt-2">Join us and start your journey</p>
-        </header>
+    <div className="relative min-h-screen w-full overflow-hidden bg-surface">
+      <AnimatedBackground />
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">Username</label>
-            <input type="text" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required
-              className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">Email Address</label>
-            <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required
-              className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">Password</label>
-            <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required
-              className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">Repeat Password</label>
-            <input type="password" value={form.rpassword} onChange={(e) => setForm({ ...form, rpassword: e.target.value })} required
-              className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none" />
-          </div>
+      <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
+        <LeftPanel mode="register" />
 
-          <div className="flex items-start gap-2">
-            <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1 accent-purple-600" />
-            <label className="text-sm text-gray-600">I agree to the terms and conditions</label>
-          </div>
+        <div className="lg:w-[55%] flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12 py-12 lg:py-0">
+          <AuthCard>
+            <motion.div
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className="space-y-5"
+            >
+              <motion.div variants={fadeInUp} className="text-center">
+                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                  Create Account
+                </h2>
+                <p className="text-gray-400 mt-2 text-sm">
+                  Join millions of premium shoppers
+                </p>
+              </motion.div>
 
-          <button type="submit" className="w-full bg-purple-600 text-white font-semibold py-2 rounded-xl hover:bg-purple-700 transition">
-            Sign Up
-          </button>
+              <motion.div variants={fadeInUp} className="flex gap-3">
+                {[
+                  { icon: FcGoogle, label: 'Google', key: 'google' },
+                  { icon: FaApple, label: 'Apple', key: 'apple' },
+                  { icon: FiGithub, label: 'GitHub', key: 'github' },
+                ].map(({ icon: Icon, label, key }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toast(`${label} signup coming soon`)}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-gray-400 hover:text-white"
+                    aria-label={`Sign up with ${label}`}
+                  >
+                    <Icon size={18} />
+                    <span className="text-xs font-medium hidden sm:inline">{label}</span>
+                  </button>
+                ))}
+              </motion.div>
 
-          <div className="text-center text-sm text-gray-400 mt-2">or</div>
+              <motion.div variants={fadeInUp} className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-surface px-4 text-gray-500">
+                    OR SIGN UP WITH EMAIL
+                  </span>
+                </div>
+              </motion.div>
 
-          <Link to="/login" className="w-full block text-center bg-gray-100 border border-gray-300 text-gray-800 font-medium py-2 rounded-xl hover:bg-gray-200 transition mt-2">
-            Already have an account? Login
-          </Link>
-        </form>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <motion.div variants={fadeInUp}>
+                  <PremiumInput
+                    id="reg-name"
+                    label="Full Name"
+                    value={form.username}
+                    onChange={(v) => setForm({ ...form, username: v })}
+                    icon={<FiUser size={18} />}
+                    error={errors.username}
+                    autoComplete="name"
+                  />
+                </motion.div>
+
+                <motion.div variants={fadeInUp}>
+                  <PremiumInput
+                    id="reg-email"
+                    label="Email Address"
+                    type="email"
+                    value={form.email}
+                    onChange={(v) => setForm({ ...form, email: v })}
+                    icon={<FiMail size={18} />}
+                    error={errors.email}
+                    autoComplete="email"
+                  />
+                </motion.div>
+
+                <motion.div variants={fadeInUp}>
+                  <PremiumInput
+                    id="reg-password"
+                    label="Password"
+                    type="password"
+                    value={form.password}
+                    onChange={(v) => setForm({ ...form, password: v })}
+                    icon={<FiLock size={18} />}
+                    showPasswordToggle
+                    error={errors.password}
+                    autoComplete="new-password"
+                  />
+                  <PasswordStrengthIndicator password={form.password} />
+                </motion.div>
+
+                <motion.div variants={fadeInUp}>
+                  <PremiumInput
+                    id="reg-confirm"
+                    label="Confirm Password"
+                    type="password"
+                    value={form.rpassword}
+                    onChange={(v) => setForm({ ...form, rpassword: v })}
+                    icon={<FiLock size={18} />}
+                    showPasswordToggle
+                    error={errors.rpassword}
+                    autoComplete="new-password"
+                  />
+                </motion.div>
+
+                <motion.div variants={fadeInUp}>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={agree}
+                        onChange={(e) => setAgree(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`w-4 h-4 rounded border transition-all duration-300 flex items-center justify-center ${
+                          agree
+                            ? 'bg-[#EF4444] border-[#EF4444]'
+                            : 'border-white/20 group-hover:border-white/40'
+                        }`}
+                      >
+                        {agree && (
+                          <svg
+                            viewBox="0 0 12 12"
+                            className="w-3 h-3 text-white"
+                          >
+                            <path
+                              d="M2.5 6l2.5 2.5 4.5-5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors leading-5">
+                      I agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          toast('Terms & Conditions page coming soon')
+                        }
+                        className="text-[#EF4444] hover:text-[#DC2626]"
+                      >
+                        Terms & Conditions
+                      </button>{' '}
+                      and{' '}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          toast('Privacy Policy page coming soon')
+                        }
+                        className="text-[#EF4444] hover:text-[#DC2626]"
+                      >
+                        Privacy Policy
+                      </button>
+                    </span>
+                  </label>
+                  {errors.agree && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-xs text-red-400 mt-1"
+                    >
+                      {errors.agree}
+                    </motion.p>
+                  )}
+                </motion.div>
+
+                <motion.div variants={fadeInUp}>
+                  <PremiumButton loading={loading} type="submit">
+                    Create Account
+                  </PremiumButton>
+                </motion.div>
+              </form>
+
+              <motion.p
+                variants={fadeInUp}
+                className="text-center text-sm text-gray-500"
+              >
+                Already have an account?{' '}
+                <Link
+                  to="/login"
+                  className="text-[#EF4444] hover:text-[#DC2626] font-medium transition-colors"
+                >
+                  Sign in
+                </Link>
+              </motion.p>
+            </motion.div>
+          </AuthCard>
+        </div>
       </div>
     </div>
   )

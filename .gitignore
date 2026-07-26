@@ -1,3 +1,21 @@
 __pycache__/
 *.pyc
 *.pyo
+
+# Environments
+venv/
+node_modules/
+
+# Database
+db.sqlite3
+
+# Static build output
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
