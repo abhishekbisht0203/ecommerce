@@ -7,10 +7,11 @@ import { fetchCategories, searchProducts } from '../../services/dummyjson'
 import { useDebounce } from '../../hooks/useDebounce'
 import { FiSearch, FiHeart, FiShoppingCart, FiUser, FiMenu, FiX } from 'react-icons/fi'
 import Logo from '../Logo'
+import AccountDropdown from './AccountDropdown'
 import type { Category, DummyProduct } from '../../types/product'
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { count: cartCount } = useCart()
   const { count: wishlistCount } = useWishlist()
   const location = useLocation()
@@ -23,6 +24,7 @@ export default function Navbar() {
   const [searching, setSearching] = useState(false)
   const navigate = useNavigate()
   const searchRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const debouncedSearch = useDebounce(search, 300)
 
   useEffect(() => {
@@ -60,6 +62,22 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+
+  useEffect(() => {
+    if (!dropdownOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside)
+    }, 0)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [dropdownOpen])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -194,43 +212,30 @@ export default function Navbar() {
             )}
           </Link>
 
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="p-2.5 rounded-full hover:bg-gray-100 transition-colors"
+              className={`relative p-2.5 rounded-full transition-all duration-200 ${
+                dropdownOpen
+                  ? 'bg-purple-100 text-purple-600 shadow-sm'
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`}
               aria-label="Account"
+              aria-expanded={dropdownOpen}
+              aria-haspopup="true"
             >
-              <FiUser className="text-lg text-gray-700" />
+              {user ? (
+                <span className="w-5 h-5 flex items-center justify-center text-xs font-bold">
+                  {user.username.charAt(0).toUpperCase()}
+                </span>
+              ) : (
+                <FiUser className="w-5 h-5" />
+              )}
             </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border z-50 overflow-hidden">
-                {user ? (
-                  <>
-                    <div className="px-4 py-3 border-b">
-                      <p className="text-sm font-semibold text-black">{user.username}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
-                    <Link to="/orders" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setDropdownOpen(false)}>
-                      My Orders
-                    </Link>
-                    <Link to="/add-product" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setDropdownOpen(false)}>
-                      Add Product
-                    </Link>
-                    <button
-                      onClick={() => { logout(); setDropdownOpen(false) }}
-                      className="block w-full text-left px-4 py-2.5 text-sm text-[#E53E3E] hover:bg-gray-50 font-medium"
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/login" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setDropdownOpen(false)}>Login</Link>
-                    <Link to="/register" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setDropdownOpen(false)}>Register</Link>
-                  </>
-                )}
-              </div>
-            )}
+            <AccountDropdown
+              isOpen={dropdownOpen}
+              onClose={() => setDropdownOpen(false)}
+            />
           </div>
 
           <button
