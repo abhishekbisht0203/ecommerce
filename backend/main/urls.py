@@ -27,7 +27,8 @@ urlpatterns = [
     path('bags/', views.bags_view, name='bags'),
     path('electronics/', views.electronics_view, name='electronics'),
     path('gaming/', views.gaming_view, name='gaming'),
-    
+    path('health/', views.health_check, name='health_check'),
+
     # forget password
     path('password-reset/', auth_views.PasswordResetView.as_view(template_name='password_reset.html'), name='password_reset'),
     path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='password_reset_done.html'), name='password_reset_done'),

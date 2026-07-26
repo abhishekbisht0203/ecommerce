@@ -52,6 +52,9 @@ def serve_react(request):
 def index(request):
     return serve_react(request)
 
+def health_check(request):
+    return JsonResponse({"status": "healthy", "service": "ShopIQ API"})
+
 
 def form(request):
     if request.method == "POST":
