@@ -11,6 +11,8 @@ from rest_framework.authtoken.models import Token
 from allauth.socialaccount.models import SocialAccount
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,6 +29,7 @@ def current_user(request):
     })
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def google_login(request):
