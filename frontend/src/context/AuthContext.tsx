@@ -13,6 +13,7 @@ interface AuthContextType {
   login: (username: string, password: string, remember?: boolean) => Promise<void>
   googleLogin: (credential: string) => Promise<void>
   logout: () => Promise<void>
+  handleCallback: (access: string, refresh: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -25,10 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.get('/api/auth/user/')
       setUser(res.data)
+      return res.data
     } catch {
-      setUser(null)
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
+      setUser(null)
+      return null
     } finally {
       setLoading(false)
     }
@@ -62,6 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.data.user)
   }
 
+  const handleCallback = async (access: string, refresh: string) => {
+    localStorage.setItem('access_token', access)
+    localStorage.setItem('refresh_token', refresh)
+    setLoading(true)
+    await checkAuth()
+  }
+
   const logout = async () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
@@ -74,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, googleLogin, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, logout, handleCallback }}>
       {children}
     </AuthContext.Provider>
   )
