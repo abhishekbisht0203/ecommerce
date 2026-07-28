@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   login: (username: string, password: string, remember?: boolean) => Promise<void>
+  googleLogin: (credential: string) => Promise<void>
   logout: () => Promise<void>
   checkAuth: () => Promise<void>
 }
@@ -44,6 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await checkAuth()
   }
 
+  const googleLogin = async (credential: string) => {
+    const res = await api.post('/api/auth/google/', { credential })
+    if (res.data.token) {
+      localStorage.setItem('auth_token', res.data.token)
+    }
+    await checkAuth()
+  }
+
   const logout = async () => {
     localStorage.removeItem('auth_token')
     try {
@@ -55,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   )
