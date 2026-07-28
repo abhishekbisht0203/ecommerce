@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import api from '../api/axios'
 
 interface User {
@@ -13,7 +13,6 @@ interface AuthContextType {
   login: (username: string, password: string, remember?: boolean) => Promise<void>
   googleLogin: (credential: string) => Promise<void>
   logout: () => Promise<void>
-  checkAuth: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -22,49 +21,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const res = await api.get('/api/auth/user/')
       setUser(res.data)
     } catch {
       setUser(null)
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
+    const access = localStorage.getItem('access_token')
+    if (!access) {
+      setLoading(false)
+      setUser(null)
+      return
+    }
     checkAuth()
-  }, [])
+  }, [checkAuth])
 
   const login = async (username: string, password: string, remember?: boolean) => {
     const res = await api.post('/login/', { username, password, remember })
-    if (res.data.token) {
-      localStorage.setItem('auth_token', res.data.token)
+    if (res.data.access) {
+      localStorage.setItem('access_token', res.data.access)
+      localStorage.setItem('refresh_token', res.data.refresh)
     }
-    await checkAuth()
+    setUser(res.data.user)
   }
 
   const googleLogin = async (credential: string) => {
     const res = await api.post('/api/auth/google/', { credential })
-    if (res.data.token) {
-      localStorage.setItem('auth_token', res.data.token)
+    if (res.data.access) {
+      localStorage.setItem('access_token', res.data.access)
+      localStorage.setItem('refresh_token', res.data.refresh)
     }
-    await checkAuth()
+    setUser(res.data.user)
   }
 
   const logout = async () => {
-    localStorage.removeItem('auth_token')
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
     try {
       await api.get('/logout/')
     } catch {
-      // best-effort: session logout may fail cross-origin
+      // best-effort
     }
     setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, googleLogin, logout, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, logout }}>
       {children}
     </AuthContext.Provider>
   )

@@ -13,7 +13,7 @@ import razorpay
 from .models import Cart, Products
 import logging
 from decimal import Decimal, ROUND_HALF_UP
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
 
 logger = logging.getLogger(__name__)
 
@@ -167,11 +167,12 @@ def login_user(request):
                 login(request, user)
                 if not remember:
                     request.session.set_expiry(0)
-                token, _ = Token.objects.get_or_create(user=user)
+                refresh = RefreshToken.for_user(user)
                 return JsonResponse({
                     'success': True,
                     'message': 'Login successful.',
-                    'token': token.key,
+                    'access': str(refresh.access_token),
+                    'refresh': str(refresh),
                     'user': {'id': user.id, 'username': user.username, 'email': user.email}
                 })
             else:
@@ -185,13 +186,6 @@ def login_user(request):
 
 
 def logout_user(request):
-    auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-    if auth_header.startswith('Token '):
-        try:
-            token = Token.objects.get(key=auth_header[6:])
-            token.delete()
-        except Token.DoesNotExist:
-            pass
     logout(request)
     return JsonResponse({"success": True, "message": "Logged out successfully."})
 
@@ -222,11 +216,12 @@ def register(request):
             user = User.objects.create_user(username=username, password=password, email=email)
 
             login(request, user)
-            token, _ = Token.objects.get_or_create(user=user)
+            refresh = RefreshToken.for_user(user)
             return JsonResponse({
                 "success": True,
                 "message": "Account created successfully!",
-                "token": token.key,
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
                 "user": {"id": user.id, "username": user.username, "email": user.email},
                 "redirect": "/"
             }, status=201)

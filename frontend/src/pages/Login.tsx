@@ -44,6 +44,10 @@ export default function Login() {
   }
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse?.credential) {
+      toast.error('Google login failed. Please try again.')
+      return
+    }
     try {
       await googleLogin(credentialResponse.credential)
       toast.success('Welcome back!')
@@ -81,7 +85,6 @@ export default function Login() {
                   size="large"
                   text="signin_with"
                   shape="rectangular"
-                  width={undefined}
                 />
               </motion.div>
 

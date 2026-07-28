@@ -16,7 +16,7 @@ import { fadeInUp, staggerContainer } from '../lib/animations'
 
 export default function Register() {
   const navigate = useNavigate()
-  const { checkAuth, googleLogin } = useAuth()
+  const { googleLogin } = useAuth()
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -49,11 +49,11 @@ export default function Register() {
         password: form.password,
       })
       if (res.data.success) {
-        if (res.data.token) {
-          localStorage.setItem('auth_token', res.data.token)
+        if (res.data.access) {
+          localStorage.setItem('access_token', res.data.access)
+          localStorage.setItem('refresh_token', res.data.refresh)
         }
         toast.success(res.data.message || 'Account created successfully!')
-        await checkAuth()
         navigate(res.data.redirect || '/')
       }
     } catch (err: any) {
@@ -64,6 +64,10 @@ export default function Register() {
   }
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse?.credential) {
+      toast.error('Google signup failed. Please try again.')
+      return
+    }
     try {
       await googleLogin(credentialResponse.credential)
       toast.success('Account created successfully!')
@@ -105,7 +109,6 @@ export default function Register() {
                   size="large"
                   text="signup_with"
                   shape="rectangular"
-                  width={undefined}
                 />
               </motion.div>
 
