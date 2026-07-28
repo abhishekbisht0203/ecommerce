@@ -240,6 +240,9 @@ SIMPLE_JWT = {
 }
 
 LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/api/auth/login/success/'
+
+FRONTEND_URL = 'https://ecommerce-shopiq.vercel.app' if not DEBUG else 'http://localhost:5173'
 
 # Email configuration (set in .env)
 if os.environ.get('EMAIL_HOST_USER'):

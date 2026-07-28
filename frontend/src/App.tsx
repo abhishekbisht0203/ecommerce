@@ -19,6 +19,7 @@ import ProductListing from './pages/ProductListing'
 import ProductDetail from './pages/ProductDetail'
 import AddProduct from './pages/AddProduct'
 import PasswordReset from './pages/PasswordReset'
+import AuthCallback from './pages/AuthCallback'
 import { useEffect } from 'react'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
@@ -42,6 +43,7 @@ export default function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/password-reset" element={<PasswordReset />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
 
                 <Route element={<Layout />}>
                   <Route path="/" element={<Home />} />

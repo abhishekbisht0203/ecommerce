@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FiUser, FiLock } from 'react-icons/fi'
+import { FcGoogle } from 'react-icons/fc'
 import { GoogleLogin } from '@react-oauth/google'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
@@ -11,6 +12,8 @@ import AuthCard from '../components/auth/AuthCard'
 import PremiumInput from '../components/auth/PremiumInput'
 import PremiumButton from '../components/auth/PremiumButton'
 import { fadeInUp, staggerContainer } from '../lib/animations'
+
+const GOOGLE_REDIRECT_URL = `${import.meta.env.VITE_API_BASE_URL || ''}/accounts/google/login/`
 
 export default function Login() {
   const { login, googleLogin } = useAuth()
@@ -86,6 +89,15 @@ export default function Login() {
                   text="signin_with"
                   shape="rectangular"
                 />
+                <div className="mt-3 text-center">
+                  <a
+                    href={GOOGLE_REDIRECT_URL}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-gray-400 hover:text-white text-sm"
+                  >
+                    <FcGoogle size={16} />
+                    Sign in with Google (redirect)
+                  </a>
+                </div>
               </motion.div>
 
               <motion.div variants={fadeInUp} className="relative">

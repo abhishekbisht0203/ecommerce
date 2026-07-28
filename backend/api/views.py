@@ -48,6 +48,10 @@ def google_login(request):
         from django.conf import settings
         google_client_id = settings.SOCIALACCOUNT_PROVIDERS.get('google', {}).get('APP', {}).get('client_id', '')
 
+        if not google_client_id:
+            logger.error("GOOGLE_CLIENT_ID is not configured. Set it in Render environment variables.")
+            return JsonResponse({'error': 'Google login is not configured on the server'}, status=500)
+
         id_info = id_token.verify_oauth2_token(
             credential,
             google_requests.Request(),
