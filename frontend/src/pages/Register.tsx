@@ -2,9 +2,6 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FiUser, FiMail, FiLock } from 'react-icons/fi'
-import { FcGoogle } from 'react-icons/fc'
-import { FaApple } from 'react-icons/fa'
-import { FiGithub } from 'react-icons/fi'
 import { GoogleLogin } from '@react-oauth/google'
 import toast from 'react-hot-toast'
 import api from '../api/axios'
@@ -100,37 +97,16 @@ export default function Register() {
                 </p>
               </motion.div>
 
-              <motion.div variants={fadeInUp} className="flex gap-3">
-                {[
-                  { icon: FcGoogle, label: 'Google', key: 'google' },
-                  { icon: FaApple, label: 'Apple', key: 'apple' },
-                  { icon: FiGithub, label: 'GitHub', key: 'github' },
-                ].map(({ icon: Icon, label, key }) => (
-                  key === 'google' ? (
-                    <div key={key} className="flex-1">
-                      <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={() => toast.error('Google signup failed')}
-                        theme="outline"
-                        size="large"
-                        text="signup_with"
-                        shape="rectangular"
-                        width={undefined}
-                      />
-                    </div>
-                  ) : (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => toast(`${label} signup coming soon`)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-gray-400 hover:text-white"
-                      aria-label={`Sign up with ${label}`}
-                    >
-                      <Icon size={18} />
-                      <span className="text-xs font-medium hidden sm:inline">{label}</span>
-                    </button>
-                  )
-                ))}
+              <motion.div variants={fadeInUp}>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => toast.error('Google signup failed')}
+                  theme="outline"
+                  size="large"
+                  text="signup_with"
+                  shape="rectangular"
+                  width={undefined}
+                />
               </motion.div>
 
               <motion.div variants={fadeInUp} className="relative">
