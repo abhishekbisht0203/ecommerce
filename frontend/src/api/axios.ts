@@ -22,6 +22,9 @@ function processQueue(error: unknown, token: string | null) {
 }
 
 api.interceptors.request.use((config) => {
+  if (config.url?.includes('/auth/google/')) {
+    return config
+  }
   const access = localStorage.getItem('access_token')
   if (access) {
     config.headers.Authorization = `Bearer ${access}`

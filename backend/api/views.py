@@ -8,10 +8,12 @@ from main.models import Products
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialAccount
+from django.http import JsonResponse
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.views.decorators.csrf import csrf_exempt
+import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,13 +31,18 @@ def current_user(request):
 
 
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([permissions.AllowAny])
-@authentication_classes([])
 def google_login(request):
-    credential = request.data.get('credential')
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        body = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    credential = body.get('credential')
     if not credential:
-        return Response({'error': 'Credential is required'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Credential is required'}, status=400)
 
     try:
         from django.conf import settings
@@ -48,13 +55,13 @@ def google_login(request):
         )
 
         if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-            return Response({'error': 'Invalid issuer'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': 'Invalid issuer'}, status=400)
 
         email = id_info.get('email')
         google_id = id_info.get('sub')
 
         if not email:
-            return Response({'error': 'Email not provided by Google'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': 'Email not provided by Google'}, status=400)
 
         social_accounts = SocialAccount.objects.filter(provider='google', uid=google_id)
         if social_accounts.exists():
@@ -92,7 +99,7 @@ def google_login(request):
         login(request, user)
         refresh = RefreshToken.for_user(user)
 
-        return Response({
+        return JsonResponse({
             'success': True,
             'access': str(refresh.access_token),
             'refresh': str(refresh),
@@ -101,10 +108,10 @@ def google_login(request):
 
     except ValueError as e:
         logger.error(f"Google token verification failed: {e}")
-        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Invalid Google credential'}, status=400)
     except Exception as e:
         logger.error(f"Google login error: {e}", exc_info=True)
-        return Response({'error': 'Google login failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse({'error': 'Google login failed'}, status=500)
 
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
